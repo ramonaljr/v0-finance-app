@@ -1,11 +1,13 @@
 import { BottomNav } from "@/components/bottom-nav"
 import { FABButton } from "@/components/fab-button"
 import { Card } from "@/components/ui/card"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { ChevronRight, Settings, Zap } from "lucide-react"
 
 export default function BudgetsPage() {
+  const [view, setView] = React.useState("month")
   const budgetCategories = {
     essentials: [
       { name: "Food & Drink", allocated: 600, spent: 420, rollover: true, color: "bg-[oklch(var(--category-food))]" },
@@ -32,7 +34,7 @@ export default function BudgetsPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-4">
+      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-6 py-4">
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
             <div>
@@ -42,6 +44,22 @@ export default function BudgetsPage() {
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
             </Button>
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <SegmentedControl
+              options={[
+                { label: "Week", value: "week" },
+                { label: "Month", value: "month" },
+                { label: "Quarter", value: "quarter" },
+              ]}
+              value={view}
+              onValueChange={setView}
+              size="sm"
+            />
+            <div className="rounded-md bg-muted/50 px-3 py-2 text-xs tabular-nums">
+              <span className="text-muted-foreground mr-2">Remaining</span>
+              <span className="font-semibold text-success">$325</span>
+            </div>
           </div>
         </div>
       </header>

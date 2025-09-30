@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { isModernSoftTheme, toggleModernSoftTheme } from "@/lib/design-tokens"
 
 type Theme = {
   id: string
@@ -51,6 +52,8 @@ type ThemeContextType = {
   themes: Theme[]
   darkMode: boolean
   toggleDarkMode: () => void
+  modernSoftTheme: boolean
+  toggleModernSoftTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -58,11 +61,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<Theme>(themes[0])
   const [darkMode, setDarkMode] = useState(false)
+  const [modernSoftTheme, setModernSoftTheme] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
 
+    // Load legacy theme
     const savedThemeId = localStorage.getItem("app-theme")
     if (savedThemeId) {
       const theme = themes.find((t) => t.id === savedThemeId)
@@ -72,6 +77,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Load dark mode
     const savedDarkMode = localStorage.getItem("app-dark-mode")
     console.log("[v0] Loaded dark mode from localStorage:", savedDarkMode)
     if (savedDarkMode === "true") {
@@ -81,6 +87,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } else {
       document.documentElement.classList.remove("dark")
       console.log("[v0] Removed dark class from document")
+    }
+
+    // Load modern-soft theme
+    const savedModernSoft = localStorage.getItem("app-theme-modern-soft")
+    const isModernSoft = savedModernSoft === "true" || isModernSoftTheme()
+    setModernSoftTheme(isModernSoft)
+    
+    if (isModernSoft) {
+      document.documentElement.classList.add("modern-soft")
+      console.log("[v0] Applied modern-soft class to document")
+    } else {
+      document.documentElement.classList.remove("modern-soft")
+      console.log("[v0] Removed modern-soft class from document")
     }
   }, [])
 
@@ -119,12 +138,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  if (!mounted) {
-    return <>{children}</>
+  const toggleModernSoftThemeHandler = () => {
+    const newModernSoft = !modernSoftTheme
+    console.log("[v0] Toggling modern-soft theme to:", newModernSoft)
+    setModernSoftTheme(newModernSoft)
+    toggleModernSoftTheme(newModernSoft)
   }
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, setTheme, themes, darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ 
+      currentTheme, 
+      setTheme, 
+      themes, 
+      darkMode, 
+      toggleDarkMode,
+      modernSoftTheme,
+      toggleModernSoftTheme: toggleModernSoftThemeHandler
+    }}>
       {children}
     </ThemeContext.Provider>
   )

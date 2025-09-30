@@ -1,13 +1,13 @@
 "use client"
-
+import dynamic from "next/dynamic"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { FinancialCalendar } from "@/components/financial-calendar"
-import { AddTransactionDialog } from "@/components/add-transaction-dialog"
+const FinancialCalendar = dynamic(() => import("@/components/financial-calendar").then(m => m.FinancialCalendar), { ssr: false })
+const AddTransactionDialog = dynamic(() => import("@/components/add-transaction-dialog").then(m => m.AddTransactionDialog), { ssr: false })
 import {
   Search,
   Filter,
@@ -30,7 +30,10 @@ import {
   Receipt,
 } from "lucide-react"
 import { useState } from "react"
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+const TransactionSpendingPieChart = dynamic(
+  () => import("@/components/transaction-spending-pie-chart").then(m => m.TransactionSpendingPieChart),
+  { ssr: false }
+)
 
 export default function TransactionPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -305,40 +308,7 @@ export default function TransactionPage() {
                   </div>
                 </div>
 
-                <div className="mb-6 h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {pieChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="rounded-lg border bg-card p-3 shadow-lg">
-                                <p className="text-sm font-semibold text-foreground">{payload[0].name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  ${payload[0].value.toFixed(2)} ({payload[0].payload.percentage}%)
-                                </p>
-                              </div>
-                            )
-                          }
-                          return null
-                        }}
-                      />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
+                <TransactionSpendingPieChart data={pieChartData} />
 
                 <div className="space-y-3">
                   {pieChartData.map((item) => (

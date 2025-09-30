@@ -2,16 +2,19 @@ import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Eye, Plus, TrendingUp, Sparkles, Target, ArrowRight, Zap, Brain, ChevronRight } from "lucide-react"
-import { AICoachFAB } from "@/components/ai-coach-fab"
+import dynamic from "next/dynamic"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ThemeToggleButton } from "@/components/theme-toggle-button"
+
+const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 modern-soft:bg-background">
       <main className="mx-auto max-w-lg">
-        <div className="border-b bg-card px-6 pb-6 pt-8">
+        <div className="border-b bg-card px-6 pb-6 pt-8 modern-soft:bg-surface modern-soft:border-border/50 modern-soft:shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12 border-2 border-border">
@@ -22,14 +25,17 @@ export default function HomePage() {
                 <h1 className="text-xl font-semibold text-foreground">John Doe</h1>
               </div>
             </div>
-            <Button size="icon" variant="ghost" className="h-10 w-10 hover:bg-muted">
-              <Eye className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <ThemeToggleButton />
+              <Button size="icon" variant="ghost" className="h-10 w-10 hover:bg-muted">
+                <Eye className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
-          <div className="rounded-xl border bg-muted/30 p-6">
+          <div className="rounded-xl border bg-muted/30 p-6 modern-soft:rounded-card modern-soft:bg-surface-alt modern-soft:border-border/50 modern-soft:shadow-sm">
             <p className="mb-2 text-sm font-medium text-muted-foreground">Total Net Worth</p>
-            <p className="mb-4 text-4xl font-bold tracking-tight text-foreground">$2,382,919.69</p>
+            <p className="mb-4 text-4xl font-bold tracking-tight text-foreground tabular-nums">$2,382,919.69</p>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-success" />
@@ -58,9 +64,9 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-3">
-            <Card className="border-l-4 border-l-warning p-4 hover:shadow-sm transition-shadow cursor-pointer">
+            <Card className="border-l-4 border-l-warning p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10 modern-soft:rounded-sm modern-soft:bg-warning-soft">
                   <Zap className="h-5 w-5 text-warning" />
                 </div>
                 <div className="flex-1">
@@ -81,9 +87,9 @@ export default function HomePage() {
               </div>
             </Card>
 
-            <Card className="border-l-4 border-l-success p-4 hover:shadow-sm transition-shadow cursor-pointer">
+            <Card className="border-l-4 border-l-success p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10 modern-soft:rounded-sm modern-soft:bg-success-soft">
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
                 <div className="flex-1">
@@ -101,9 +107,9 @@ export default function HomePage() {
               </div>
             </Card>
 
-            <Card className="border-l-4 border-l-primary p-4 hover:shadow-sm transition-shadow cursor-pointer">
+            <Card className="border-l-4 border-l-primary p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 modern-soft:rounded-sm modern-soft:bg-primary-soft">
                   <Target className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">

@@ -1,5 +1,5 @@
 "use client"
-
+import dynamic from "next/dynamic"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,12 +25,13 @@ import {
   Clock,
 } from "lucide-react"
 import { useState } from "react"
-import { AICoachFAB } from "@/components/ai-coach-fab"
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
+const BudgetPieChart = dynamic(() => import("@/components/budget-pie-chart").then(m => m.BudgetPieChart), { ssr: false })
 import { getCategoryColor } from "@/lib/category-colors"
 
 export default function BudgetPage() {
   const [currentMonth, setCurrentMonth] = useState("October 2024")
+  const [tab, setTab] = useState("plan")
 
   const recurringExpenses = [
     {
@@ -185,7 +186,7 @@ export default function BudgetPage() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 pb-6 pt-8">
+      <header className="relative z-10 border-b border-border bg-card px-6 pb-6 pt-8">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -233,9 +234,9 @@ export default function BudgetPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-lg px-6 py-6">
-        <Tabs defaultValue="plan" className="w-full">
-          <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0">
+      <main className="relative z-10 mx-auto max-w-lg px-6 py-6">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0 pointer-events-auto">
             <TabsTrigger
               value="plan"
               className="rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
@@ -554,40 +555,7 @@ export default function BudgetPage() {
                 <p className="mt-1 text-sm text-muted-foreground">${totalSpent.toFixed(2)} spent</p>
               </div>
 
-              <div className="mb-6 h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="rounded-lg border bg-card p-3 shadow-lg">
-                              <p className="text-sm font-semibold text-foreground">{payload[0].name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                ${payload[0].value.toFixed(2)} ({payload[0].payload.percentage}%)
-                              </p>
-                            </div>
-                          )
-                        }
-                        return null
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              <BudgetPieChart data={pieChartData} />
 
               {/* Category Breakdown */}
               <div>

@@ -4,58 +4,36 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
 :root {
-  /* Untitled UI-inspired minimal color system - clean grays and subtle accents */
-
-  /* Base colors - Pure whites and deep grays */
+  /* Legacy theme - Untitled UI-inspired minimal color system */
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.2 0 0);
-
-  /* Surface colors - Clean whites */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0 0);
-
-  /* Primary - Subtle violet/purple accent like Untitled UI */
   --primary: oklch(0.5 0.15 280);
   --primary-foreground: oklch(1 0 0);
-
-  /* Secondary - Very light gray */
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.2 0 0);
-
-  /* Muted - Light gray backgrounds */
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.5 0 0);
-
-  /* Accent - Subtle gray */
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.2 0 0);
-
-  /* Semantic colors - Subtle and refined */
   --success: oklch(0.55 0.15 150);
   --success-foreground: oklch(1 0 0);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(1 0 0);
   --warning: oklch(0.65 0.15 60);
   --warning-foreground: oklch(0.2 0 0);
-
-  /* Border - Very subtle gray borders */
   --border: oklch(0.93 0 0);
   --input: oklch(0.93 0 0);
   --ring: oklch(0.5 0.15 280);
-
-  /* Chart colors - Muted, professional palette */
   --chart-1: oklch(0.5 0.15 280);
   --chart-2: oklch(0.55 0.15 150);
   --chart-3: oklch(0.6 0.12 200);
   --chart-4: oklch(0.65 0.15 60);
   --chart-5: oklch(0.55 0.12 320);
-
-  /* Radius - Slightly rounded like Untitled UI */
   --radius: 0.5rem;
-
-  /* Sidebar */
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.2 0 0);
   --sidebar-primary: oklch(0.5 0.15 280);
@@ -66,7 +44,82 @@
   --sidebar-ring: oklch(0.5 0.15 280);
 }
 
+/* Modern Soft Theme - Soft, rounded, money-app aesthetics */
+.modern-soft:root {
+  /* Background colors */
+  --background: #FAFAFC;
+  --foreground: #1F2937;
+  --card: #FFFFFF;
+  --card-foreground: #1F2937;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F2937;
+  
+  /* Surface colors */
+  --surface: #FFFFFF;
+  --surface-alt: #F6F7FB;
+  
+  /* Brand colors */
+  --primary: #4C5BD4;
+  --primary-foreground: #FFFFFF;
+  --primary-soft: #E8EBFF;
+  
+  /* Secondary colors */
+  --secondary: #F6F7FB;
+  --secondary-foreground: #1F2937;
+  --muted: #F6F7FB;
+  --muted-foreground: #8B8FA3;
+  --accent: #F6F7FB;
+  --accent-foreground: #1F2937;
+  
+  /* Semantic colors */
+  --success: #1FA463;
+  --success-foreground: #FFFFFF;
+  --success-soft: #E6F7EF;
+  --destructive: #E23D3D;
+  --destructive-foreground: #FFFFFF;
+  --danger-soft: #FDECEC;
+  --warning: #F59E0B;
+  --warning-foreground: #1F2937;
+  --warning-soft: #FEF3C7;
+  
+  /* Border colors */
+  --border: #E5E7EB;
+  --input: #F3F4F6;
+  --ring: #4C5BD4;
+  
+  /* Chart colors */
+  --chart-1: #4C5BD4;
+  --chart-2: #1FA463;
+  --chart-3: #F59E0B;
+  --chart-4: #E23D3D;
+  --chart-5: #8B5CF6;
+  
+  /* Enhanced radius system */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  
+  /* Enhanced shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 24px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.08), 0 16px 48px rgba(0, 0, 0, 0.12);
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: #4C5BD4;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F6F7FB;
+  --sidebar-accent-foreground: #1F2937;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #4C5BD4;
+}
+
 .dark {
+  /* Legacy dark theme */
   --background: oklch(0.12 0 0);
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.15 0 0);
@@ -103,6 +156,73 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.25 0 0);
   --sidebar-ring: oklch(0.6 0.15 280);
+}
+
+/* Modern Soft Theme - Dark Mode */
+.modern-soft.dark {
+  /* Background colors */
+  --background: #0F1419;
+  --foreground: #F9FAFB;
+  --card: #1A1F2E;
+  --card-foreground: #F9FAFB;
+  --popover: #1A1F2E;
+  --popover-foreground: #F9FAFB;
+  
+  /* Surface colors */
+  --surface: #1A1F2E;
+  --surface-alt: #232937;
+  
+  /* Brand colors */
+  --primary: #6366F1;
+  --primary-foreground: #F9FAFB;
+  --primary-soft: #312E81;
+  
+  /* Secondary colors */
+  --secondary: #232937;
+  --secondary-foreground: #F9FAFB;
+  --muted: #232937;
+  --muted-foreground: #9CA3AF;
+  --accent: #232937;
+  --accent-foreground: #F9FAFB;
+  
+  /* Semantic colors */
+  --success: #34D399;
+  --success-foreground: #0F1419;
+  --success-soft: #064E3B;
+  --destructive: #F87171;
+  --destructive-foreground: #F9FAFB;
+  --danger-soft: #7F1D1D;
+  --warning: #FBBF24;
+  --warning-foreground: #0F1419;
+  --warning-soft: #78350F;
+  
+  /* Border colors */
+  --border: #374151;
+  --input: #1F2937;
+  --ring: #6366F1;
+  
+  /* Chart colors */
+  --chart-1: #6366F1;
+  --chart-2: #34D399;
+  --chart-3: #FBBF24;
+  --chart-4: #F87171;
+  --chart-5: #A78BFA;
+  
+  /* Enhanced shadows for dark mode */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 6px 24px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25), 0 16px 48px rgba(0, 0, 0, 0.35);
+  
+  /* Sidebar */
+  --sidebar: #1A1F2E;
+  --sidebar-foreground: #F9FAFB;
+  --sidebar-primary: #6366F1;
+  --sidebar-primary-foreground: #F9FAFB;
+  --sidebar-accent: #232937;
+  --sidebar-accent-foreground: #F9FAFB;
+  --sidebar-border: #374151;
+  --sidebar-ring: #6366F1;
 }
 
 @theme inline {
@@ -158,10 +278,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1, "salt" 0;
   }
 
-  /* Untitled UI typography - clean, minimal hierarchy */
+  /* Typography scale */
   h1,
   h2,
   h3,
@@ -171,21 +291,10 @@
     @apply font-semibold tracking-tight;
   }
 
-  h1 {
-    @apply text-3xl leading-tight;
-  }
-
-  h2 {
-    @apply text-2xl leading-tight;
-  }
-
-  h3 {
-    @apply text-xl leading-snug;
-  }
-
-  p {
-    @apply leading-relaxed;
-  }
+  h1 { @apply text-3xl leading-tight; }
+  h2 { @apply text-2xl leading-tight; }
+  h3 { @apply text-xl leading-snug; }
+  p { @apply leading-relaxed; }
 }
 
 @layer utilities {
@@ -197,7 +306,7 @@
     text-wrap: pretty;
   }
 
-  /* Untitled UI shadows - very subtle */
+  /* Legacy shadows - very subtle */
   .shadow-soft {
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.03);
   }
@@ -208,5 +317,134 @@
 
   .shadow-strong {
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  }
+
+  /* Modern Soft Theme Utilities */
+  .modern-soft .shadow-xs {
+    box-shadow: var(--shadow-xs);
+  }
+
+  .modern-soft .shadow-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .modern-soft .shadow-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .modern-soft .shadow-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Enhanced radius utilities */
+  .modern-soft .rounded-xs {
+    border-radius: var(--radius-sm);
+  }
+
+  .modern-soft .rounded-card {
+    border-radius: var(--radius-md);
+  }
+
+  .modern-soft .rounded-pill {
+    border-radius: var(--radius-xl);
+  }
+
+  /* Soft surface utilities */
+  .modern-soft .bg-surface {
+    background-color: var(--surface);
+  }
+
+  .modern-soft .bg-surface-alt {
+    background-color: var(--surface-alt);
+  }
+
+  .modern-soft .bg-primary-soft {
+    background-color: var(--primary-soft);
+  }
+
+  .modern-soft .bg-success-soft {
+    background-color: var(--success-soft);
+  }
+
+  .modern-soft .bg-danger-soft {
+    background-color: var(--danger-soft);
+  }
+
+  .modern-soft .bg-warning-soft {
+    background-color: var(--warning-soft);
+  }
+
+  /* Enhanced typography */
+  .modern-soft .text-display {
+    font-size: var(--font-size-display);
+    line-height: var(--line-height-display);
+    letter-spacing: var(--letter-spacing-display);
+    font-weight: 600;
+  }
+
+  .modern-soft .text-display-sm {
+    font-size: var(--font-size-display-sm);
+    line-height: var(--line-height-display-sm);
+    letter-spacing: var(--letter-spacing-display-sm);
+    font-weight: 600;
+  }
+
+  /* Mobile ergonomics */
+  .hit-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Numeric readability */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Safe-area helpers */
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+  }
+  .pt-safe {
+    padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+  }
+
+  /* Chart theme helpers */
+  .chart-stroke {
+    stroke-width: 2px;
+  }
+
+  /* Motion utilities */
+  .transition-smooth {
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .transition-fast {
+    transition: all 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .transition-bounce {
+    transition: all 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* Card hover effects */
+  .modern-soft .card-hover {
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .modern-soft .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Button press effects */
+  .modern-soft .btn-press:active {
+    transform: scale(0.98);
+  }
+
+  /* Focus ring improvements */
+  .modern-soft .focus-ring {
+    outline: none;
+    ring: 2px solid var(--ring);
+    ring-offset: 2px;
   }
 }

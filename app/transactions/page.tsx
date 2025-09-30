@@ -3,7 +3,7 @@
 import { BottomNav } from "@/components/bottom-nav"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Badge } from "@/components/ui/badge"
 import {
   ChevronLeft,
@@ -23,6 +23,8 @@ import { useState } from "react"
 
 export default function TransactionsPage() {
   const [currentMonth] = useState("December 2020")
+  const [range, setRange] = useState("week")
+  const [tab, setTab] = useState("reports")
 
   const calendarDays = [
     { date: 1, amount: 0 },
@@ -84,14 +86,31 @@ export default function TransactionsPage() {
     <div className="min-h-screen bg-background pb-20">
       <main className="mx-auto max-w-lg">
         {/* Header */}
-        <div className="bg-card px-6 py-4">
+        <div className="sticky top-0 z-20 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-6 py-3 border-b">
           <h1 className="mb-1 text-xl font-semibold text-foreground">Daily Balance, transactions</h1>
           <p className="text-sm text-muted-foreground">Track your spending patterns</p>
+          <div className="mt-3 flex items-center justify-between">
+            <SegmentedControl
+              options={[
+                { label: "Day", value: "day" },
+                { label: "Week", value: "week" },
+                { label: "Month", value: "month" },
+              ]}
+              value={range}
+              onValueChange={setRange}
+              className=""
+              size="sm"
+            />
+            <div className="rounded-md bg-muted/50 px-3 py-2 text-xs tabular-nums">
+              <span className="text-muted-foreground mr-2">Net</span>
+              <span className="font-semibold text-destructive">-$187.45</span>
+            </div>
+          </div>
         </div>
 
-        <Tabs defaultValue="reports" className="w-full">
-          <div className="bg-card px-6 py-3">
-            <TabsList className="w-full justify-start gap-2 bg-transparent p-0">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <div className="relative z-30 bg-card px-6 py-3">
+            <TabsList className="w-full justify-start gap-2 bg-transparent p-0 pointer-events-auto">
               <TabsTrigger
                 value="reports"
                 className="rounded-lg border border-gray-200 bg-white px-4 data-[state=active]:border-gray-900 data-[state=active]:bg-gray-900 data-[state=active]:text-white"

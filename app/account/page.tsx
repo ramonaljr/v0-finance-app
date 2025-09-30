@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -25,12 +26,17 @@ import {
 import { useState } from "react"
 import { Progress } from "@/components/ui/progress"
 
+const BankingSection = dynamic(() => import("@/components/account-banking-section").then(m => m.BankingSection), { ssr: false })
+const CreditSection = dynamic(() => import("@/components/account-credit-section").then(m => m.CreditSection), { ssr: false })
+const InvestmentsSection = dynamic(() => import("@/components/account-investments-section").then(m => m.InvestmentsSection), { ssr: false })
+
 export default function AccountPage() {
   const [showBalances, setShowBalances] = useState(true)
+  const [tab, setTab] = useState("banking")
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="border-b bg-card px-6 pb-6 pt-8">
+      <header className="relative z-10 border-b bg-card px-6 pb-6 pt-8">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -74,9 +80,9 @@ export default function AccountPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-lg px-6 py-6">
-        <Tabs defaultValue="banking" className="w-full">
-          <TabsList className="mb-6 grid w-full grid-cols-3">
+      <main className="relative z-10 mx-auto max-w-lg px-6 py-6">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsList className="mb-6 grid w-full grid-cols-3 pointer-events-auto">
             <TabsTrigger value="banking" className="gap-2">
               <Building2 className="h-4 w-4" />
               Banking

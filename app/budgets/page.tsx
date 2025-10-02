@@ -1,284 +1,255 @@
 "use client"
 
-import React from "react"
+import { useState } from "react"
 import { BottomNav } from "@/components/bottom-nav"
-import { FABButton } from "@/components/fab-button"
 import { Card } from "@/components/ui/card"
-import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { ChevronRight, Settings, Zap } from "lucide-react"
-import { useBudgets, useFormattedBudgets } from "@/lib/hooks/use-api"
-import { BudgetsLoadingSkeleton, CardSkeleton } from "@/components/ui/loading-skeleton"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getCategoryIcon } from "@/lib/category-icons"
+import { ChevronLeft, ChevronRight, Plus, Edit2 } from "lucide-react"
 
-export const dynamic = 'force-dynamic'
+export default function BudgetsNewPage() {
+  const [view, setView] = useState("month")
 
-const BudgetsPage = React.memo(() => {
-  const [view, setView] = React.useState("month")
-  const { data: budgets, isLoading, error } = useFormattedBudgets()
+  const totalBudget = 50000
+  const totalSpent = 18666.67
+  const remaining = totalBudget - totalSpent
 
-  if (isLoading) {
-    return <BudgetsLoadingSkeleton />
-  }
+  const mainCategories = [
+    { name: "Food & Drink", percentage: 12, budget: 6000, spent: 4000, subcategories: [
+      { name: "Breakfast", budget: 1000, spent: 800 },
+      { name: "Lunch", budget: 3000, spent: 2000 },
+      { name: "Dinner", budget: 2000, spent: 1200 },
+    ]},
+    { name: "Transportation", percentage: 10, budget: 5000, spent: 3500 },
+    { name: "Shopping", percentage: 16, budget: 8000, spent: 6400 },
+    { name: "Health Care", percentage: 18, budget: 9000, spent: 4766.67 },
+  ]
 
-  if (error) {
+  const CircularProgress = ({ percentage, size = 120, strokeWidth = 12, children }: any) => {
+    const radius = (size - strokeWidth) / 2
+    const circumference = radius * 2 * Math.PI
+    const offset = circumference - (percentage / 100) * circumference
+
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <div className="mx-auto max-w-lg px-6 py-6">
-          <Alert>
-            <AlertDescription>
-              Failed to load budgets. Please try again later.
-            </AlertDescription>
-          </Alert>
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg className="transform -rotate-90" width={size} height={size}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="#e5e7eb"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="url(#gradient-progress)"
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            className="transition-all duration-500"
+          />
+          <defs>
+            <linearGradient id="gradient-progress" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          {children}
         </div>
-        <BottomNav />
-        <FABButton />
       </div>
     )
   }
 
-  // Group budgets into categories for display
-  const budgetCategories = React.useMemo(() => {
-    if (!budgets) return { essentials: [], lifestyle: [], goals: [] }
+  const DonutChart = ({ categories }: any) => {
+    const total = categories.reduce((sum: number, cat: any) => sum + cat.percentage, 0)
+    let currentAngle = 0
 
+    const colors = ['#10b981', '#3b82f6', '#ec4899', '#f59e0b']
+
+    return (
+      <div className="relative w-32 h-32">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+          {categories.map((cat: any, idx: number) => {
+            const angle = (cat.percentage / total) * 360
+            const startAngle = currentAngle
+            const endAngle = currentAngle + angle
+            currentAngle = endAngle
+
+            const start = polarToCartesian(50, 50, 35, startAngle)
+            const end = polarToCartesian(50, 50, 35, endAngle)
+            const largeArcFlag = angle > 180 ? 1 : 0
+
+            const pathData = [
+              `M ${start.x} ${start.y}`,
+              `A 35 35 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
+            ].join(' ')
+
+            return (
+              <path
+                key={idx}
+                d={pathData}
+                fill="none"
+                stroke={colors[idx % colors.length]}
+                strokeWidth="10"
+              />
+            )
+          })}
+          <circle cx="50" cy="50" r="25" fill="white" />
+        </svg>
+      </div>
+    )
+  }
+
+  function polarToCartesian(centerX: number, centerY: number, radius: number, angleInDegrees: number) {
+    const angleInRadians = (angleInDegrees * Math.PI) / 180.0
     return {
-      essentials: budgets.slice(0, 3),
-      lifestyle: budgets.slice(3, 5),
-      goals: budgets.slice(5, 7),
+      x: centerX + (radius * Math.cos(angleInRadians)),
+      y: centerY + (radius * Math.sin(angleInRadians))
     }
-  }, [budgets])
-
-  // Memoize budget calculations to avoid recalculating on every render
-  const calculateBudgetData = React.useCallback((category: any) => {
-    // Since allocated and spent are now currency strings, we need to parse them back to numbers
-    const allocated = parseFloat(category.allocated.replace(/[$,]/g, ''))
-    const spent = parseFloat(category.spent.replace(/[$,]/g, ''))
-    const percentage = allocated > 0 ? (spent / allocated) * 100 : 0
-    const isOverBudget = percentage > 100
-    const remaining = allocated - spent
-
-    return {
-      percentage,
-      isOverBudget,
-      remaining,
-      allocated,
-      spent,
-    }
-  }, [])
+  }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-6 py-4">
-        <div className="mx-auto max-w-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Budgets</h1>
-              <p className="text-sm text-muted-foreground">October 2024</p>
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b px-6 py-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full mb-2">
+              <span className="text-xs font-medium">Daily</span>
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
             </div>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
+            <div className="flex items-center gap-2">
+              <ChevronLeft className="h-5 w-5 text-gray-400" />
+              <h2 className="text-lg font-semibold">This Month</h2>
+              <ChevronRight className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          <Button variant="ghost" size="icon">
+            <Edit2 className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="px-6 py-6 space-y-6 max-w-lg mx-auto">
+        {/* Main Budget Circle */}
+        <Card className="p-8 bg-white/90 backdrop-blur border-0 shadow-lg">
+          <div className="flex justify-center mb-6">
+            <CircularProgress percentage={(totalSpent / totalBudget) * 100} size={160} strokeWidth={16}>
+              <div className="text-center">
+                <p className="text-xs text-gray-500 mb-1">Remain</p>
+                <p className="text-2xl font-bold text-green-600">
+                  ¥{(remaining / 100).toLocaleString()}
+                </p>
+              </div>
+            </CircularProgress>
+          </div>
+
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-500">Spent</span>
+            <span className="text-lg font-semibold">
+              ¥{(totalSpent / 100).toLocaleString()}
+            </span>
+          </div>
+        </Card>
+
+        {/* Category Breakdown with Donut Chart */}
+        <Card className="p-6 bg-white/90 backdrop-blur border-0 shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Budget</p>
+              <p className="text-3xl font-bold">${(totalBudget / 100).toLocaleString()}</p>
+              <p className="text-sm text-gray-400">${(totalSpent / 100).toFixed(2)}</p>
+            </div>
+            <DonutChart categories={mainCategories} />
+          </div>
+
+          <div className="space-y-3">
+            {mainCategories.map((cat, idx) => {
+              const { icon: Icon, gradient } = getCategoryIcon(cat.name)
+              const colors = ['text-green-600', 'text-blue-600', 'text-pink-600', 'text-orange-600']
+
+              return (
+                <div key={cat.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{cat.name}</span>
+                        <span className={`text-xs ${colors[idx % colors.length]}`}>{cat.percentage}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold ml-4">${(cat.budget / 100).toLocaleString()}</span>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+
+        {/* Subcategory Breakdown Example */}
+        <Card className="p-6 bg-white/90 backdrop-blur border-0 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white">
+                {(() => {
+                  const { icon: Icon } = getCategoryIcon("Food & Drink")
+                  return <Icon className="h-6 w-6" />
+                })()}
+              </div>
+              <div>
+                <h3 className="font-semibold">Food & Drink</h3>
+                <p className="text-xs text-gray-500">3 subcategories</p>
+              </div>
+            </div>
+            <span className="text-lg font-bold">${(6000 / 100).toLocaleString()}</span>
+          </div>
+
+          <div className="space-y-3">
+            {mainCategories[0].subcategories?.map((sub) => (
+              <div key={sub.name} className="pl-4 border-l-2 border-green-200">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm">{sub.name}</span>
+                  <span className="text-sm font-semibold">${(sub.budget / 100).toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-400 to-green-600"
+                    style={{ width: `${(sub.spent / sub.budget) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+
+            <Button variant="ghost" size="sm" className="w-full text-gray-500 hover:text-gray-700">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Subcategory
             </Button>
           </div>
-          <div className="mt-3 flex items-center justify-between">
-            <SegmentedControl
-              options={[
-                { label: "Week", value: "week" },
-                { label: "Month", value: "month" },
-                { label: "Quarter", value: "quarter" },
-              ]}
-              value={view}
-              onValueChange={setView}
-              size="sm"
-            />
-            <div className="rounded-md bg-muted/50 px-3 py-2 text-xs tabular-nums">
-              <span className="text-muted-foreground mr-2">Remaining</span>
-              <span className="font-semibold text-success">$325</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="mx-auto max-w-lg px-6 py-6">
-        {/* Budget Summary */}
-        <Card className="mb-6 p-6">
-          <div className="mb-4">
-            <p className="text-sm text-muted-foreground">Total Budget</p>
-            <p className="text-3xl font-semibold text-foreground">$4,250</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground">Spent</p>
-              <p className="text-lg font-semibold text-foreground">$3,925</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Remaining</p>
-              <p className="text-lg font-semibold text-success">$325</p>
-            </div>
-          </div>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-            <div className="h-full bg-primary transition-all" style={{ width: "92%" }} />
-          </div>
         </Card>
 
-        {/* Automation Panel */}
-        <Card className="mb-6 border-primary/20 bg-primary/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Automations</h2>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Paycheck Allocation</p>
-                <p className="text-xs text-muted-foreground">Auto-distribute income to envelopes</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Dynamic Rebalancing</p>
-                <p className="text-xs text-muted-foreground">Adjust budgets based on spending</p>
-              </div>
-              <Switch />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Round-ups to Goals</p>
-                <p className="text-xs text-muted-foreground">Save spare change automatically</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </div>
-        </Card>
-
-        {/* Essentials */}
-        <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Essentials</h2>
-          <div className="space-y-3">
-            {budgetCategories.essentials.map((category) => {
-              const { percentage, isOverBudget, remaining } = calculateBudgetData(category)
-
-              return (
-                <Card key={category.name} className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full ${category.color}`} />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{category.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {category.spent} of {category.allocated}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="mb-2 h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full transition-all ${isOverBudget ? "bg-destructive" : category.color}`}
-                      style={{ width: `${Math.min(percentage, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={isOverBudget ? "text-destructive" : "text-success"}>
-                      {isOverBudget ? `Over by $${Math.abs(remaining).toFixed(2)}` : `$${remaining.toFixed(2)} left`}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Rollover</span>
-                      <Switch checked={category.rollover} />
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1 h-12">
+            Plan
+          </Button>
+          <Button variant="outline" className="flex-1 h-12">
+            Remain
+          </Button>
         </div>
-
-        {/* Lifestyle */}
-        <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Lifestyle</h2>
-          <div className="space-y-3">
-            {budgetCategories.lifestyle.map((category) => {
-              const { percentage, isOverBudget, remaining } = calculateBudgetData(category)
-
-              return (
-                <Card key={category.name} className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full ${category.color}`} />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{category.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {category.spent} of {category.allocated}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="mb-2 h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full transition-all ${isOverBudget ? "bg-destructive" : category.color}`}
-                      style={{ width: `${Math.min(percentage, 100)}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className={isOverBudget ? "text-destructive" : "text-success"}>
-                      {isOverBudget ? `Over by $${Math.abs(remaining).toFixed(2)}` : `$${remaining.toFixed(2)} left`}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Rollover</span>
-                      <Switch checked={category.rollover} />
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Goals */}
-        <div className="mb-6">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">Goals</h2>
-          <div className="space-y-3">
-            {budgetCategories.goals.map((category) => {
-              const { percentage } = calculateBudgetData(category)
-
-              return (
-                <Card key={category.name} className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full ${category.color}`} />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{category.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {category.spent} of {category.allocated}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="mb-2 h-2 overflow-hidden rounded-full bg-muted">
-                    <div className={`h-full transition-all ${category.color}`} style={{ width: `${percentage}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-success">On track</span>
-                    <span className="text-muted-foreground">{percentage.toFixed(1)}% complete</span>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-      </main>
+      </div>
 
       <BottomNav />
-      <FABButton />
     </div>
   )
-})
-
-BudgetsPage.displayName = 'BudgetsPage'
-
-export default BudgetsPage
+}

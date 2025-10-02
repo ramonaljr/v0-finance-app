@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { CalculatorInput } from "@/components/ui/calculator-input"
 import { Plus, Keyboard, Mic, Camera, Loader2, Check } from "lucide-react"
 
 export function AddTransactionDialog() {
@@ -181,14 +182,11 @@ export function AddTransactionDialog() {
 
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
+                <CalculatorInput
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
+                  onChange={setAmount}
+                  placeholder="0.00"
+                  className="w-full"
                 />
               </div>
 

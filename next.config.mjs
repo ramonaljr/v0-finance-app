@@ -10,6 +10,12 @@ const nextConfig = {
     // Use Next.js Image Optimization
     unoptimized: false,
   },
+  // Configure output for better handling of dynamic routes
+  // output: 'standalone', // Disabled on Windows to avoid symlink EPERM issues
+  // Disable static optimization for pages that need dynamic behavior
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
   async headers() {
     // Relax CSP in development to avoid breaking Next.js hydration/React Refresh
     if (process.env.NODE_ENV !== 'production') {

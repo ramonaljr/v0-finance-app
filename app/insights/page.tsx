@@ -3,8 +3,44 @@ import { FABButton } from "@/components/fab-button"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, Download, Calendar } from "lucide-react"
+import { useFormattedKPICache } from "@/lib/hooks/use-api"
+import { StatsLoadingSkeleton, ChartLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-export default function InsightsPage() {
+export const dynamic = 'force-dynamic'
+
+const InsightsPage = () => {
+  const { data: kpiData, isLoading, error } = useFormattedKPICache()
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <StatsLoadingSkeleton />
+        <div className="mx-auto max-w-lg px-6 py-6">
+          <ChartLoadingSkeleton />
+          <ChartLoadingSkeleton />
+        </div>
+        <BottomNav />
+        <FABButton />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="mx-auto max-w-lg px-6 py-6">
+          <Alert>
+            <AlertDescription>
+              Failed to load insights data. Please try again later.
+            </AlertDescription>
+          </Alert>
+        </div>
+        <BottomNav />
+        <FABButton />
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -28,18 +64,37 @@ export default function InsightsPage() {
         <div className="mb-6 grid grid-cols-2 gap-4">
           <Card className="p-4">
             <p className="mb-1 text-xs text-muted-foreground">Savings Rate</p>
-            <p className="text-2xl font-semibold text-success">32.5%</p>
+            <p className="text-2xl font-semibold text-success">
+              {kpiData?.income && kpiData?.expense && typeof kpiData.income === 'string' && typeof kpiData.expense === 'string'
+                ? (() => {
+                    const incomeVal = parseFloat(kpiData.income.replace(/[$,]/g, '')) || 0
+                    const expenseVal = parseFloat(kpiData.expense.replace(/[$,]/g, '')) || 0
+                    return incomeVal > 0 ? `${((1 - expenseVal / incomeVal) * 100).toFixed(1)}%` : '0.0%'
+                  })()
+                : '0.0%'
+              }
+            </p>
             <div className="mt-2 flex items-center gap-1 text-xs text-success">
               <TrendingUp className="h-3 w-3" />
-              <span>+5.2%</span>
+              <span>This month</span>
             </div>
           </Card>
           <Card className="p-4">
-            <p className="mb-1 text-xs text-muted-foreground">Net Worth</p>
-            <p className="text-2xl font-semibold text-foreground">$48.2K</p>
-            <div className="mt-2 flex items-center gap-1 text-xs text-success">
-              <TrendingUp className="h-3 w-3" />
-              <span>+12.8%</span>
+            <p className="mb-1 text-xs text-muted-foreground">Net Income</p>
+            <p className="text-2xl font-semibold text-foreground">
+              {kpiData?.net || '$0.00'}
+            </p>
+            <div className={`mt-2 flex items-center gap-1 text-xs ${(() => {
+              const netStr = String(kpiData?.net || '$0.00')
+              const netVal = parseFloat(netStr.replace(/[$,]/g, '')) || 0
+              return netVal >= 0 ? 'text-success' : 'text-destructive'
+            })()}`}>
+              <TrendingUp className={`h-3 w-3 ${(() => {
+                const netStr = String(kpiData?.net || '$0.00')
+                const netVal = parseFloat(netStr.replace(/[$,]/g, '')) || 0
+                return netVal < 0 ? 'rotate-180' : ''
+              })()}`} />
+              <span>This month</span>
             </div>
           </Card>
         </div>
@@ -49,40 +104,59 @@ export default function InsightsPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Income vs Expenses</h2>
             <Button variant="ghost" size="sm" className="h-8 text-xs">
-              This Year
+              This Month
             </Button>
           </div>
 
-          {/* Stacked Bar Chart Placeholder */}
+          {/* Stacked Bar Chart with Real Data */}
           <div className="space-y-3">
-            {[
-              { month: "Jan", income: 5000, expenses: 3200 },
-              { month: "Feb", income: 5000, expenses: 3500 },
-              { month: "Mar", income: 5200, expenses: 3100 },
-              { month: "Apr", income: 5000, expenses: 3800 },
-              { month: "May", income: 5500, expenses: 3400 },
-              { month: "Jun", income: 5000, expenses: 3600 },
-            ].map((data) => {
-              const maxValue = 6000
-              const incomeWidth = (data.income / maxValue) * 100
-              const expenseWidth = (data.expenses / maxValue) * 100
+            {kpiData?.income && kpiData?.expense ? (() => {
+              // Ensure values are strings before calling replace
+              const incomeStr = String(kpiData.income)
+              const expenseStr = String(kpiData.expense)
+
+              const incomeValue = parseFloat(incomeStr.replace(/[$,]/g, '')) || 0
+              const expenseValue = parseFloat(expenseStr.replace(/[$,]/g, '')) || 0
+              const total = incomeValue + expenseValue
+
+              if (total === 0) {
+                return (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No data available
+                  </div>
+                )
+              }
 
               return (
-                <div key={data.month} className="space-y-1">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">{data.month}</span>
+                    <span className="text-muted-foreground">This Month</span>
                     <div className="flex gap-4">
-                      <span className="text-success">${data.income}</span>
-                      <span className="text-destructive">${data.expenses}</span>
+                      <span className="text-success">{kpiData.income}</span>
+                      <span className="text-destructive">{kpiData.expense}</span>
                     </div>
                   </div>
                   <div className="flex h-8 gap-1 overflow-hidden rounded-md">
-                    <div className="bg-success/20" style={{ width: `${incomeWidth}%` }} />
-                    <div className="bg-destructive/20" style={{ width: `${expenseWidth}%` }} />
+                    <div
+                      className="bg-success/20"
+                      style={{
+                        width: `${(incomeValue / total) * 100}%`
+                      }}
+                    />
+                    <div
+                      className="bg-destructive/20"
+                      style={{
+                        width: `${(expenseValue / total) * 100}%`
+                      }}
+                    />
                   </div>
                 </div>
               )
-            })}
+            })() : (
+              <div className="p-8 text-center text-muted-foreground">
+                No data available
+              </div>
+            )}
           </div>
 
           <div className="mt-4 flex items-center justify-center gap-6 text-xs">
@@ -157,7 +231,9 @@ export default function InsightsPage() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-2xl font-semibold text-foreground">$3,925</p>
+                <p className="text-2xl font-semibold text-foreground">
+                  {kpiData?.expense || '$0.00'}
+                </p>
                 <p className="text-xs text-muted-foreground">Total Spent</p>
               </div>
             </div>
@@ -178,7 +254,7 @@ export default function InsightsPage() {
                   <span className="text-sm text-foreground">{category.name}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-foreground">${category.amount}</span>
+                  <span className="text-sm font-medium text-foreground">${category.amount.toFixed(2)}</span>
                   <span className="w-12 text-right text-sm text-muted-foreground">{category.percentage}%</span>
                 </div>
               </div>
@@ -263,3 +339,7 @@ export default function InsightsPage() {
     </div>
   )
 }
+
+InsightsPage.displayName = 'InsightsPage'
+
+export default InsightsPage

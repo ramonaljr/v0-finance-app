@@ -1,6 +1,8 @@
 import { generateObject } from "ai"
 import { z } from "zod"
 
+export const dynamic = 'force-dynamic'
+
 const receiptSchema = z.object({
   merchant: z.string().describe("The name of the merchant or store"),
   amount: z.number().positive().describe("The total amount of the transaction"),

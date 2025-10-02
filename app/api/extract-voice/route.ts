@@ -1,6 +1,8 @@
 import { generateObject } from "ai"
 import { z } from "zod"
 
+export const dynamic = 'force-dynamic'
+
 const transactionSchema = z.object({
   merchant: z.string().describe("The name of the merchant or store"),
   amount: z.number().positive().describe("The amount spent"),

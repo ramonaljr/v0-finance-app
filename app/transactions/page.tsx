@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   ChevronLeft,
   ChevronRight,
@@ -20,59 +21,35 @@ import {
   Car,
 } from "lucide-react"
 import { useState } from "react"
+import {
+  useTransactions,
+  useFormattedTransactions,
+  useKPICache,
+  useCalendarCache,
+  useFormattedKPICache
+} from "@/lib/hooks/use-api"
+import { TransactionsLoadingSkeleton, CalendarLoadingSkeleton, ChartLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-export default function TransactionsPage() {
-  const [currentMonth] = useState("December 2020")
+export const dynamic = 'force-dynamic'
+
+const TransactionsPage = () => {
+  const [currentMonth] = useState("December 2024")
   const [range, setRange] = useState("week")
   const [tab, setTab] = useState("reports")
 
-  const calendarDays = [
-    { date: 1, amount: 0 },
-    { date: 2, amount: 12.5 },
-    { date: 3, amount: 45.2 },
-    { date: 4, amount: 0 },
-    { date: 5, amount: 23.8 },
-    { date: 6, amount: 67.4 },
-    { date: 7, amount: 15.0 },
-    { date: 8, amount: 89.3 },
-    { date: 9, amount: 34.5 },
-    { date: 10, amount: 0 },
-    { date: 11, amount: 56.7 },
-    { date: 12, amount: 23.4 },
-    { date: 13, amount: 78.9 },
-    { date: 14, amount: 12.3 },
-    { date: 15, amount: 45.6 },
-    { date: 16, amount: 0 },
-    { date: 17, amount: 34.2 },
-    { date: 18, amount: 67.8 },
-    { date: 19, amount: 23.4 },
-    { date: 20, amount: 89.1 },
-    { date: 21, amount: 45.6 },
-    { date: 22, amount: 12.3 },
-    { date: 23, amount: 0 },
-    { date: 24, amount: 56.7 },
-    { date: 25, amount: 34.5 },
-    { date: 26, amount: 78.9 },
-    { date: 27, amount: 23.4 },
-    { date: 28, amount: 45.6 },
-    { date: 29, amount: 67.8 },
-    { date: 30, amount: 12.3 },
-    { date: 31, amount: 0 },
-  ]
+  // Fetch real data
+  const { data: transactions, isLoading: transactionsLoading, error: transactionsError } = useFormattedTransactions()
+  const { data: kpiData, isLoading: kpiLoading, error: kpiError } = useFormattedKPICache()
+  const { data: calendarData, isLoading: calendarLoading, error: calendarError } = useCalendarCache()
 
-  const transactions = [
-    { time: "14:30", category: "Food & Drink", amount: 23.5, icon: "🍔", color: "bg-yellow-100 text-yellow-600" },
-    { time: "12:15", category: "Health Care", amount: 150.0, icon: "🏥", color: "bg-green-100 text-green-600" },
-    { time: "09:45", category: "Shopping", amount: 89.99, icon: "🛍️", color: "bg-pink-100 text-pink-600" },
-    {
-      time: "08:00",
-      category: "Housing & Utilities",
-      amount: 1200.0,
-      icon: "🏠",
-      color: "bg-orange-100 text-orange-600",
-    },
-  ]
+  // Mock calendar days for now (will be replaced with real calendar data)
+  const calendarDays = Array.from({ length: 31 }, (_, i) => ({
+    date: i + 1,
+    amount: Math.random() * 100 // Mock data for now
+  }))
 
+  // Mock category stats for now (will be calculated from real data)
   const categoryStats = [
     { name: "Groceries", amount: 487.32, percentage: 28, count: 12, color: "bg-gray-700" },
     { name: "Dining", amount: 342.15, percentage: 20, count: 18, color: "bg-gray-600" },
@@ -81,6 +58,44 @@ export default function TransactionsPage() {
     { name: "Utilities", amount: 145.0, percentage: 8, count: 3, color: "bg-gray-400" },
     { name: "Other", amount: 108.22, percentage: 6, count: 5, color: "bg-gray-300" },
   ]
+
+  // Show loading state
+  if (transactionsLoading || kpiLoading || calendarLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <TransactionsLoadingSkeleton />
+        <BottomNav />
+      </div>
+    )
+  }
+
+  // Show error state
+  if (transactionsError || kpiError || calendarError) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="mx-auto max-w-lg px-6 py-6">
+          <Alert>
+            <AlertDescription>
+              Failed to load transaction data. Please try again later.
+            </AlertDescription>
+          </Alert>
+        </div>
+        <BottomNav />
+      </div>
+    )
+  }
+
+  // Transform transactions for display
+  const displayTransactions = transactions?.slice(0, 4).map((transaction) => ({
+    time: new Date(transaction.occurred_at).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }),
+    category: transaction.payee || 'Uncategorized',
+    amount: parseFloat(transaction.amount.replace(/[$,]/g, '')),
+    icon: "💳", // Default icon, would be determined by category
+    color: "bg-blue-100 text-blue-600", // Default color
+  })) || []
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -132,7 +147,7 @@ export default function TransactionsPage() {
             <div className="px-6 pt-4">
               <h2 className="mb-3 text-base font-semibold text-foreground">Today's Transactions</h2>
               <Card className="divide-y divide-border">
-                {transactions.map((transaction, index) => (
+                {displayTransactions.map((transaction, index) => (
                   <div key={index} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-full ${transaction.color}`}>
@@ -143,9 +158,14 @@ export default function TransactionsPage() {
                         <p className="text-xs text-muted-foreground">{transaction.time}</p>
                       </div>
                     </div>
-                    <p className="text-base font-semibold text-destructive">-${transaction.amount}</p>
+                    <p className="text-base font-semibold text-destructive">-${transaction.amount.toFixed(2)}</p>
                   </div>
                 ))}
+                {displayTransactions.length === 0 && (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No transactions found
+                  </div>
+                )}
               </Card>
             </div>
 
@@ -182,16 +202,22 @@ export default function TransactionsPage() {
               {/* Month Summary */}
               <div className="grid grid-cols-3 gap-4 rounded-lg bg-muted/50 p-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Dec Income</p>
-                  <p className="text-sm font-semibold text-success">$503.93</p>
+                  <p className="text-xs text-muted-foreground">Income</p>
+                  <p className="text-sm font-semibold text-success">
+                    {kpiData?.income || '$0.00'}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Dec Spending</p>
-                  <p className="text-sm font-semibold text-destructive">$691.38</p>
+                  <p className="text-xs text-muted-foreground">Spending</p>
+                  <p className="text-sm font-semibold text-destructive">
+                    {kpiData?.expense || '$0.00'}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Dec Balance</p>
-                  <p className="text-sm font-semibold text-destructive">-$187.45</p>
+                  <p className="text-xs text-muted-foreground">Net</p>
+                  <p className={`text-sm font-semibold ${parseFloat(kpiData?.net?.replace(/[$,]/g, '') || '0') >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {kpiData?.net || '$0.00'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -214,10 +240,12 @@ export default function TransactionsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">Daily Spending</p>
-                  <p className="text-2xl font-bold text-gray-900">$57.46</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {kpiData?.expense ? `$${(parseFloat(kpiData.expense.replace(/[$,]/g, '')) / 30).toFixed(2)}` : '$0.00'}
+                  </p>
                   <div className="mt-2 flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-red-600" />
-                    <span className="text-xs text-red-600">+8% from average</span>
+                    <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-xs text-green-600">Calculated from monthly data</span>
                   </div>
                 </Card>
 
@@ -231,10 +259,15 @@ export default function TransactionsPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">Per Transaction</p>
-                  <p className="text-2xl font-bold text-gray-900">$12.14</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {transactions && transactions.length > 0
+                      ? `$${(transactions.reduce((sum, t) => sum + parseFloat(t.amount.replace(/[$,]/g, '')), 0) / transactions.length).toFixed(2)}`
+                      : '$0.00'
+                    }
+                  </p>
                   <div className="mt-2 flex items-center gap-1">
                     <TrendingDown className="h-3.5 w-3.5 text-green-600" />
-                    <span className="text-xs text-green-600">-3% from average</span>
+                    <span className="text-xs text-green-600">Based on recent transactions</span>
                   </div>
                 </Card>
               </div>
@@ -255,10 +288,12 @@ export default function TransactionsPage() {
               <Card className="border border-gray-200 bg-white p-5">
                 <div className="mb-6 text-center">
                   <p className="text-sm text-gray-600">Total Spending</p>
-                  <p className="text-4xl font-bold text-gray-900">$1,723.49</p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-red-600" />
-                    <span className="text-sm font-medium text-red-600">+12% from last month</span>
+                  <p className="text-4xl font-bold text-gray-900">
+                    {kpiData?.expense || '$0.00'}
+                  </p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                    <span className="text-sm font-medium text-green-600">This month</span>
                   </div>
                 </div>
 
@@ -378,3 +413,7 @@ export default function TransactionsPage() {
     </div>
   )
 }
+
+TransactionsPage.displayName = 'TransactionsPage'
+
+export default TransactionsPage

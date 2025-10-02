@@ -6,6 +6,7 @@ create table if not exists public.users (
   email text not null,
   country text,
   currency_code text default 'USD',
+  ai_consent_at timestamptz,
   created_at timestamptz default now()
 );
 
@@ -35,7 +36,7 @@ create type direction as enum ('in','out');
 create table if not exists public.transactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
-  account_id uuid not null references public.accounts(id) on delete cascade,
+  account_id uuid references public.accounts(id) on delete cascade,
   category_id uuid references public.categories(id) on delete set null,
   amount_minor bigint not null,
   currency_code text not null,

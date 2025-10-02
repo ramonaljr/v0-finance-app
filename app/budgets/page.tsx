@@ -1,3 +1,6 @@
+"use client"
+
+import React from "react"
 import { BottomNav } from "@/components/bottom-nav"
 import { FABButton } from "@/components/fab-button"
 import { Card } from "@/components/ui/card"
@@ -5,31 +8,64 @@ import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { ChevronRight, Settings, Zap } from "lucide-react"
+import { useBudgets, useFormattedBudgets } from "@/lib/hooks/use-api"
+import { BudgetsLoadingSkeleton, CardSkeleton } from "@/components/ui/loading-skeleton"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-export default function BudgetsPage() {
+export const dynamic = 'force-dynamic'
+
+const BudgetsPage = React.memo(() => {
   const [view, setView] = React.useState("month")
-  const budgetCategories = {
-    essentials: [
-      { name: "Food & Drink", allocated: 600, spent: 420, rollover: true, color: "bg-[oklch(var(--category-food))]" },
-      {
-        name: "Transport",
-        allocated: 300,
-        spent: 180,
-        rollover: false,
-        color: "bg-[oklch(var(--category-transport))]",
-      },
-      { name: "Home Bills", allocated: 1800, spent: 1800, rollover: false, color: "bg-[oklch(var(--category-home))]" },
-    ],
-    lifestyle: [
-      { name: "Shopping", allocated: 400, spent: 520, rollover: true, color: "bg-[oklch(var(--category-shopping))]" },
-      { name: "Self-Care", allocated: 200, spent: 85, rollover: true, color: "bg-[oklch(var(--category-selfcare))]" },
-      { name: "Health", allocated: 150, spent: 120, rollover: false, color: "bg-[oklch(var(--category-health))]" },
-    ],
-    goals: [
-      { name: "Emergency Fund", allocated: 500, spent: 500, rollover: true, color: "bg-success" },
-      { name: "Vacation", allocated: 300, spent: 300, rollover: true, color: "bg-chart-2" },
-    ],
+  const { data: budgets, isLoading, error } = useFormattedBudgets()
+
+  if (isLoading) {
+    return <BudgetsLoadingSkeleton />
   }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="mx-auto max-w-lg px-6 py-6">
+          <Alert>
+            <AlertDescription>
+              Failed to load budgets. Please try again later.
+            </AlertDescription>
+          </Alert>
+        </div>
+        <BottomNav />
+        <FABButton />
+      </div>
+    )
+  }
+
+  // Group budgets into categories for display
+  const budgetCategories = React.useMemo(() => {
+    if (!budgets) return { essentials: [], lifestyle: [], goals: [] }
+
+    return {
+      essentials: budgets.slice(0, 3),
+      lifestyle: budgets.slice(3, 5),
+      goals: budgets.slice(5, 7),
+    }
+  }, [budgets])
+
+  // Memoize budget calculations to avoid recalculating on every render
+  const calculateBudgetData = React.useCallback((category: any) => {
+    // Since allocated and spent are now currency strings, we need to parse them back to numbers
+    const allocated = parseFloat(category.allocated.replace(/[$,]/g, ''))
+    const spent = parseFloat(category.spent.replace(/[$,]/g, ''))
+    const percentage = allocated > 0 ? (spent / allocated) * 100 : 0
+    const isOverBudget = percentage > 100
+    const remaining = allocated - spent
+
+    return {
+      percentage,
+      isOverBudget,
+      remaining,
+      allocated,
+      spent,
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -123,9 +159,7 @@ export default function BudgetsPage() {
           <h2 className="mb-4 text-lg font-semibold text-foreground">Essentials</h2>
           <div className="space-y-3">
             {budgetCategories.essentials.map((category) => {
-              const percentage = (category.spent / category.allocated) * 100
-              const isOverBudget = percentage > 100
-              const remaining = category.allocated - category.spent
+              const { percentage, isOverBudget, remaining } = calculateBudgetData(category)
 
               return (
                 <Card key={category.name} className="p-4">
@@ -135,7 +169,7 @@ export default function BudgetsPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{category.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          ${category.spent} of ${category.allocated}
+                          {category.spent} of {category.allocated}
                         </p>
                       </div>
                     </div>
@@ -149,7 +183,7 @@ export default function BudgetsPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className={isOverBudget ? "text-destructive" : "text-success"}>
-                      {isOverBudget ? `Over by $${Math.abs(remaining)}` : `$${remaining} left`}
+                      {isOverBudget ? `Over by $${Math.abs(remaining).toFixed(2)}` : `$${remaining.toFixed(2)} left`}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Rollover</span>
@@ -167,9 +201,7 @@ export default function BudgetsPage() {
           <h2 className="mb-4 text-lg font-semibold text-foreground">Lifestyle</h2>
           <div className="space-y-3">
             {budgetCategories.lifestyle.map((category) => {
-              const percentage = (category.spent / category.allocated) * 100
-              const isOverBudget = percentage > 100
-              const remaining = category.allocated - category.spent
+              const { percentage, isOverBudget, remaining } = calculateBudgetData(category)
 
               return (
                 <Card key={category.name} className="p-4">
@@ -179,7 +211,7 @@ export default function BudgetsPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{category.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          ${category.spent} of ${category.allocated}
+                          {category.spent} of {category.allocated}
                         </p>
                       </div>
                     </div>
@@ -193,7 +225,7 @@ export default function BudgetsPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className={isOverBudget ? "text-destructive" : "text-success"}>
-                      {isOverBudget ? `Over by $${Math.abs(remaining)}` : `$${remaining} left`}
+                      {isOverBudget ? `Over by $${Math.abs(remaining).toFixed(2)}` : `$${remaining.toFixed(2)} left`}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Rollover</span>
@@ -211,7 +243,7 @@ export default function BudgetsPage() {
           <h2 className="mb-4 text-lg font-semibold text-foreground">Goals</h2>
           <div className="space-y-3">
             {budgetCategories.goals.map((category) => {
-              const percentage = (category.spent / category.allocated) * 100
+              const { percentage } = calculateBudgetData(category)
 
               return (
                 <Card key={category.name} className="p-4">
@@ -221,7 +253,7 @@ export default function BudgetsPage() {
                       <div>
                         <p className="text-sm font-medium text-foreground">{category.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          ${category.spent} of ${category.allocated}
+                          {category.spent} of {category.allocated}
                         </p>
                       </div>
                     </div>
@@ -232,7 +264,7 @@ export default function BudgetsPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-success">On track</span>
-                    <span className="text-muted-foreground">{percentage}% complete</span>
+                    <span className="text-muted-foreground">{percentage.toFixed(1)}% complete</span>
                   </div>
                 </Card>
               )
@@ -245,4 +277,8 @@ export default function BudgetsPage() {
       <FABButton />
     </div>
   )
-}
+})
+
+BudgetsPage.displayName = 'BudgetsPage'
+
+export default BudgetsPage

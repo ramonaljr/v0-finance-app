@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/contexts/theme-context"
+import { QueryProvider } from "@/components/ui/query-provider"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -22,12 +24,16 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <ThemeProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-            <Analytics />
-          </Suspense>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            <ThemeProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                {children}
+                <Analytics />
+              </Suspense>
+            </ThemeProvider>
+          </QueryProvider>
+        </ErrorBoundary>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#111111" />
       </body>

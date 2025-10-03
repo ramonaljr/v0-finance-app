@@ -35,44 +35,53 @@ export default function AccountPage() {
   const [tab, setTab] = useState("banking")
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <header className="relative z-10 border-b bg-card px-6 pb-6 pt-8">
+    <div className="min-h-screen bg-gray-50/30 pb-20">
+      {/* Enhanced Header */}
+      <header className="relative z-10 border-b bg-white px-6 pb-6 pt-8 shadow-sm">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Accounts</h1>
-              <p className="text-sm text-muted-foreground">Manage your finances</p>
+              <h1 className="text-2xl font-bold text-gray-900">Accounts</h1>
+              <p className="text-sm font-medium text-gray-600">Manage your finances</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setShowBalances(!showBalances)}>
-              {showBalances ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 hover:bg-gray-100 rounded-xl hover-scale-sm transition-all"
+              onClick={() => setShowBalances(!showBalances)}
+            >
+              {showBalances ? <Eye className="h-5 w-5" strokeWidth={2.5} /> : <EyeOff className="h-5 w-5" strokeWidth={2.5} />}
             </Button>
           </div>
 
-          <Card className="border-2 p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-                <Sparkles className="h-6 w-6 text-primary" />
+          {/* Enhanced Net Worth Card */}
+          <Card className="border-2 border-gray-200/50 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover-scale-sm bg-gradient-to-br from-white via-indigo-50/10 to-purple-50/20">
+            <div className="mb-5 flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30">
+                <Sparkles className="h-7 w-7 text-white" strokeWidth={2.5} />
               </div>
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Total Net Worth</p>
-                <p className="text-3xl font-bold text-foreground">{showBalances ? "$48,258.32" : "••••••"}</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Total Net Worth</p>
+                <p className="text-4xl font-bold text-gradient-primary tabular-nums">
+                  {showBalances ? "$48,258.32" : "••••••"}
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border bg-success/5 p-4">
-                <div className="mb-1 flex items-center gap-1.5">
-                  <ArrowUpRight className="h-4 w-4 text-success" />
-                  <p className="text-xs font-semibold text-success">Assets</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-xl border-2 border-emerald-200/50 bg-gradient-to-br from-emerald-50 to-green-50/50 p-4 shadow-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  <ArrowUpRight className="h-5 w-5 text-emerald-600" strokeWidth={2.5} />
+                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Assets</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{showBalances ? "$62,450" : "••••••"}</p>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{showBalances ? "$62,450" : "••••••"}</p>
               </div>
-              <div className="rounded-xl border bg-destructive/5 p-4">
-                <div className="mb-1 flex items-center gap-1.5">
-                  <ArrowDownRight className="h-4 w-4 text-destructive" />
-                  <p className="text-xs font-semibold text-destructive">Liabilities</p>
+              <div className="rounded-xl border-2 border-red-200/50 bg-gradient-to-br from-red-50 to-rose-50/50 p-4 shadow-sm">
+                <div className="mb-2 flex items-center gap-2">
+                  <ArrowDownRight className="h-5 w-5 text-red-600" strokeWidth={2.5} />
+                  <p className="text-xs font-bold text-red-700 uppercase tracking-wide">Liabilities</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{showBalances ? "$14,192" : "••••••"}</p>
+                <p className="text-2xl font-bold text-gray-900 tabular-nums">{showBalances ? "$14,192" : "••••••"}</p>
               </div>
             </div>
           </Card>
@@ -82,27 +91,27 @@ export default function AccountPage() {
       {/* Main Content */}
       <main className="relative z-10 mx-auto max-w-lg px-6 py-6">
         <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="mb-6 grid w-full grid-cols-3 pointer-events-auto">
-            <TabsTrigger value="banking" className="gap-2">
-              <Building2 className="h-4 w-4" />
+          <TabsList className="mb-6 grid w-full grid-cols-3 pointer-events-auto bg-white p-1 rounded-xl shadow-sm">
+            <TabsTrigger value="banking" className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all">
+              <Building2 className="h-4 w-4" strokeWidth={2.5} />
               Banking
             </TabsTrigger>
-            <TabsTrigger value="credit" className="gap-2">
-              <CreditCard className="h-4 w-4" />
+            <TabsTrigger value="credit" className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all">
+              <CreditCard className="h-4 w-4" strokeWidth={2.5} />
               Credit
             </TabsTrigger>
-            <TabsTrigger value="investments" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="investments" className="gap-2 rounded-lg data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all">
+              <TrendingUp className="h-4 w-4" strokeWidth={2.5} />
               Invest
             </TabsTrigger>
           </TabsList>
 
-          {/* Banking Tab */}
+          {/* Banking Tab - Enhanced */}
           <TabsContent value="banking" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Bank Accounts</h2>
-              <Button size="sm" className="gap-1">
-                <Plus className="h-4 w-4" />
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-bold text-gray-900">Bank Accounts</h2>
+              <Button size="sm" className="gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all h-9 rounded-xl font-semibold">
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
                 Add
               </Button>
             </div>
@@ -114,9 +123,8 @@ export default function AccountPage() {
                 type: "Checking",
                 last4: "4829",
                 icon: Wallet,
-                bgColor: "bg-primary/10",
-                borderColor: "border-primary/20",
-                iconColor: "text-primary",
+                bgGradient: "bg-gradient-to-br from-indigo-500 to-purple-600",
+                glowColor: "shadow-indigo-500/20",
               },
               {
                 name: "Ally Savings",
@@ -124,9 +132,8 @@ export default function AccountPage() {
                 type: "Savings",
                 last4: "7392",
                 icon: PiggyBank,
-                bgColor: "bg-success/10",
-                borderColor: "border-success/20",
-                iconColor: "text-success",
+                bgGradient: "bg-gradient-to-br from-emerald-400 to-green-600",
+                glowColor: "shadow-emerald-500/20",
               },
               {
                 name: "Vanguard Investment",
@@ -134,35 +141,32 @@ export default function AccountPage() {
                 type: "Investment",
                 last4: "1847",
                 icon: TrendingUp,
-                bgColor: "bg-purple-500/10",
-                borderColor: "border-purple-500/20",
-                iconColor: "text-purple-600",
+                bgGradient: "bg-gradient-to-br from-purple-500 to-pink-600",
+                glowColor: "shadow-purple-500/20",
               },
             ].map((account) => {
               const Icon = account.icon
               return (
-                <Card key={account.name} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <Card key={account.name} className="p-5 hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-1 bg-white rounded-2xl shadow-md">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-xl ${account.bgColor} border ${account.borderColor}`}
-                      >
-                        <Icon className={`h-6 w-6 ${account.iconColor}`} />
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${account.bgGradient} shadow-lg ${account.glowColor} border-2 border-white`}>
+                        <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{account.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="font-bold text-gray-900 text-base">{account.name}</p>
+                        <p className="text-xs text-gray-600 font-medium">
                           {account.type} •••• {account.last4}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-lg font-bold text-foreground">
+                      <p className="text-xl font-bold text-gray-900 tabular-nums">
                         {showBalances
                           ? `$${account.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`
                           : "••••••"}
                       </p>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
                   </div>
                 </Card>
@@ -170,28 +174,29 @@ export default function AccountPage() {
             })}
           </TabsContent>
 
-          {/* Credit Tab */}
+          {/* Credit Tab - Enhanced */}
           <TabsContent value="credit" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Credit Cards</h2>
-              <Button size="sm" className="gap-1">
-                <Plus className="h-4 w-4" />
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-bold text-gray-900">Credit Cards</h2>
+              <Button size="sm" className="gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all h-9 rounded-xl font-semibold">
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
                 Add
               </Button>
             </div>
 
-            <Card className="border-l-4 border-l-warning bg-warning/5 p-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/20">
-                  <AlertCircle className="h-5 w-5 text-warning" />
+            {/* AI Alert Card */}
+            <Card className="border-l-4 border-l-amber-400 bg-gradient-to-br from-amber-50 to-orange-50/50 p-5 rounded-2xl shadow-md">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
+                  <AlertCircle className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground mb-1">High Credit Utilization</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                  <p className="text-base font-bold text-gray-900 mb-1.5">High Credit Utilization</p>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
                     Your Chase Sapphire card is at 62% utilization. Consider paying down $1,200 to improve your credit
                     score.
                   </p>
-                  <Badge variant="outline" className="text-xs border-warning/30 text-warning">
+                  <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-100 font-semibold px-2.5 py-0.5">
                     AI Recommendation
                   </Badge>
                 </div>
@@ -220,38 +225,38 @@ export default function AccountPage() {
               const isHighUtilization = utilization > 30
 
               return (
-                <Card key={card.name} className="p-4 hover:shadow-md transition-shadow">
+                <Card key={card.name} className="p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl shadow-md">
                   <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-                        <CreditCard className="h-6 w-6 text-primary" />
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-indigo-200 shadow-lg shadow-indigo-500/20">
+                        <CreditCard className="h-7 w-7 text-white" strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{card.name}</p>
-                        <p className="text-xs text-muted-foreground">•••• {card.last4}</p>
+                        <p className="font-bold text-gray-900 text-base">{card.name}</p>
+                        <p className="text-xs text-gray-600 font-medium">•••• {card.last4}</p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <ChevronRight className="h-5 w-5 text-gray-400" />
                   </div>
 
                   <div className="mb-4 space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Balance</span>
-                      <span className="font-semibold text-foreground">
+                      <span className="text-gray-600 font-medium">Balance</span>
+                      <span className="font-bold text-gray-900">
                         {showBalances
                           ? `$${card.balance.toLocaleString()} / $${card.limit.toLocaleString()}`
                           : "•••• / ••••"}
                       </span>
                     </div>
-                    <Progress value={utilization} className="h-2" />
+                    <Progress value={utilization} className="h-2.5 bg-gray-100" />
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-xs font-medium ${isHighUtilization ? "text-warning" : "text-muted-foreground"}`}
+                        className={`text-xs font-bold ${isHighUtilization ? "text-amber-600" : "text-gray-600"}`}
                       >
                         {utilization.toFixed(1)}% utilization
                       </span>
                       {isHighUtilization && (
-                        <Badge variant="outline" className="border-warning/30 text-warning text-xs">
+                        <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 text-xs font-semibold px-2 py-0.5">
                           High Usage
                         </Badge>
                       )}
@@ -259,25 +264,25 @@ export default function AccountPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border bg-muted/50 p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Min Payment</p>
-                      <p className="font-semibold text-foreground">{showBalances ? `$${card.minDue}` : "••••"}</p>
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-50 p-3">
+                      <p className="text-xs text-gray-600 font-semibold mb-1 uppercase tracking-wide">Min Payment</p>
+                      <p className="font-bold text-gray-900">{showBalances ? `$${card.minDue}` : "••••"}</p>
                     </div>
-                    <div className="rounded-xl border bg-muted/50 p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Due Date</p>
-                      <p className="font-semibold text-foreground">{card.dueDate}</p>
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-50 p-3">
+                      <p className="text-xs text-gray-600 font-semibold mb-1 uppercase tracking-wide">Due Date</p>
+                      <p className="font-bold text-gray-900">{card.dueDate}</p>
                     </div>
                   </div>
                 </Card>
               )
             })}
 
-            {/* Loans Section */}
+            {/* Loans Section - Enhanced */}
             <div className="mt-8">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-foreground">Loans</h2>
-                <Button size="sm" variant="outline" className="gap-1 bg-transparent">
-                  <Plus className="h-4 w-4" />
+                <h2 className="text-xl font-bold text-gray-900">Loans</h2>
+                <Button size="sm" variant="outline" className="gap-1.5 bg-white border-2 hover:bg-gray-50 h-9 rounded-xl font-semibold">
+                  <Plus className="h-4 w-4" strokeWidth={2.5} />
                   Add
                 </Button>
               </div>
@@ -289,9 +294,8 @@ export default function AccountPage() {
                   original: 25000,
                   payment: 285.0,
                   icon: GraduationCap,
-                  bgColor: "bg-teal-500/10",
-                  borderColor: "border-teal-500/20",
-                  iconColor: "text-teal-600",
+                  bgGradient: "bg-gradient-to-br from-teal-400 to-cyan-600",
+                  glowColor: "shadow-teal-500/20",
                 },
                 {
                   name: "Auto Loan",
@@ -299,42 +303,39 @@ export default function AccountPage() {
                   original: 28000,
                   payment: 425.0,
                   icon: Car,
-                  bgColor: "bg-rose-500/10",
-                  borderColor: "border-rose-500/20",
-                  iconColor: "text-rose-600",
+                  bgGradient: "bg-gradient-to-br from-rose-400 to-pink-600",
+                  glowColor: "shadow-rose-500/20",
                 },
               ].map((loan) => {
                 const Icon = loan.icon
                 const paidPercentage = ((loan.original - loan.balance) / loan.original) * 100
 
                 return (
-                  <Card key={loan.name} className="mb-3 p-4 hover:shadow-md transition-shadow">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-12 w-12 items-center justify-center rounded-xl ${loan.bgColor} border ${loan.borderColor}`}
-                        >
-                          <Icon className={`h-6 w-6 ${loan.iconColor}`} />
+                  <Card key={loan.name} className="mb-3 p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl shadow-md">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${loan.bgGradient} border-2 border-white shadow-lg ${loan.glowColor}`}>
+                          <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{loan.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-bold text-gray-900 text-base">{loan.name}</p>
+                          <p className="text-xs text-gray-600 font-medium">
                             {showBalances ? `$${loan.balance.toLocaleString()} remaining` : "•••• remaining"}
                           </p>
                         </div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
 
-                    <div className="mb-3 space-y-2">
-                      <Progress value={paidPercentage} className="h-2" />
-                      <p className="text-xs text-muted-foreground">{paidPercentage.toFixed(1)}% paid off</p>
+                    <div className="mb-4 space-y-2">
+                      <Progress value={paidPercentage} className="h-2.5 bg-gray-100" />
+                      <p className="text-xs text-gray-600 font-bold">{paidPercentage.toFixed(1)}% paid off</p>
                     </div>
 
-                    <div className="rounded-xl border bg-muted/50 p-3">
+                    <div className="rounded-xl border-2 border-gray-200 bg-gray-50 p-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Monthly Payment</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="text-sm text-gray-600 font-semibold">Monthly Payment</span>
+                        <span className="font-bold text-gray-900 text-lg">
                           {showBalances ? `$${loan.payment}` : "••••"}
                         </span>
                       </div>
@@ -345,15 +346,15 @@ export default function AccountPage() {
             </div>
           </TabsContent>
 
-          {/* Investments Tab */}
+          {/* Investments Tab - Enhanced */}
           <TabsContent value="investments" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Investment Accounts</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-xl font-bold text-gray-900">Investment Accounts</h2>
               <Button
                 size="sm"
-                className="gap-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                className="gap-1.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all h-9 rounded-xl font-semibold"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
                 Add Account
               </Button>
             </div>
@@ -365,7 +366,7 @@ export default function AccountPage() {
                 gain: 5240.0,
                 gainPercent: 13.1,
                 type: "Retirement",
-                color: "from-emerald-500 to-teal-500",
+                bgGradient: "bg-gradient-to-br from-emerald-500 to-teal-500",
               },
               {
                 name: "Robinhood",
@@ -373,7 +374,7 @@ export default function AccountPage() {
                 gain: -320.0,
                 gainPercent: -3.5,
                 type: "Brokerage",
-                color: "from-green-500 to-lime-500",
+                bgGradient: "bg-gradient-to-br from-green-500 to-lime-500",
               },
               {
                 name: "Coinbase",
@@ -381,44 +382,42 @@ export default function AccountPage() {
                 gain: 890.0,
                 gainPercent: 57.1,
                 type: "Crypto",
-                color: "from-blue-500 to-indigo-500",
+                bgGradient: "bg-gradient-to-br from-blue-500 to-indigo-500",
               },
             ].map((account) => {
               const isPositive = account.gain >= 0
 
               return (
-                <Card key={account.name} className="overflow-hidden border-0 shadow-md transition-all hover:shadow-lg">
-                  <div className="p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${account.color} shadow-lg`}
-                        >
-                          <TrendingUp className="h-6 w-6 text-white" />
+                <Card key={account.name} className="overflow-hidden border-0 shadow-md transition-all hover:shadow-xl hover:-translate-y-1 duration-300 bg-white rounded-2xl">
+                  <div className="p-5">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${account.bgGradient} shadow-lg border-2 border-white`}>
+                          <TrendingUp className="h-7 w-7 text-white" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{account.name}</p>
-                          <p className="text-xs text-muted-foreground">{account.type}</p>
+                          <p className="font-bold text-gray-900 text-base">{account.name}</p>
+                          <p className="text-xs text-gray-600 font-medium">{account.type}</p>
                         </div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-lg bg-muted/50 p-3">
-                        <p className="text-xs text-muted-foreground">Balance</p>
-                        <p className="text-lg font-bold text-foreground">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-xl bg-gray-50 border-2 border-gray-200 p-4">
+                        <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">Balance</p>
+                        <p className="text-xl font-bold text-gray-900 tabular-nums">
                           {showBalances ? `$${account.balance.toLocaleString()}` : "••••••"}
                         </p>
                       </div>
-                      <div className={`rounded-lg p-3 ${isPositive ? "bg-green-50" : "bg-red-50"}`}>
-                        <p className="text-xs text-muted-foreground">Total Gain</p>
-                        <p className={`text-lg font-bold ${isPositive ? "text-green-600" : "text-red-600"}`}>
+                      <div className={`rounded-xl p-4 border-2 ${isPositive ? "bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200" : "bg-gradient-to-br from-red-50 to-rose-50 border-red-200"}`}>
+                        <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">Total Gain</p>
+                        <p className={`text-xl font-bold tabular-nums ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
                           {showBalances
                             ? `${isPositive ? "+" : ""}$${Math.abs(account.gain).toLocaleString()}`
                             : "••••••"}
                         </p>
-                        <p className={`text-xs font-medium ${isPositive ? "text-green-600" : "text-red-600"}`}>
+                        <p className={`text-xs font-bold ${isPositive ? "text-emerald-600" : "text-red-600"}`}>
                           {isPositive ? "+" : ""}
                           {account.gainPercent}%
                         </p>

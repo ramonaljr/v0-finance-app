@@ -22,54 +22,64 @@ export default function HomePage() {
   const totalToday = todayCategories.reduce((sum, cat) => sum + cat.amount, 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/40 pb-20">
+      {/* Enhanced Header with Glass Effect */}
+      <div className="sticky top-0 z-30 glass-strong border-b border-white/20 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
               {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </p>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => {
-              const newDate = new Date(selectedDate)
-              newDate.setDate(newDate.getDate() - 1)
-              setSelectedDate(newDate)
-            }}>
-              <ChevronLeft className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 hover:bg-white/80 rounded-xl hover-scale-sm transition-all"
+              onClick={() => {
+                const newDate = new Date(selectedDate)
+                newDate.setDate(newDate.getDate() - 1)
+                setSelectedDate(newDate)
+              }}
+            >
+              <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => {
-              const newDate = new Date(selectedDate)
-              newDate.setDate(newDate.getDate() + 1)
-              setSelectedDate(newDate)
-            }}>
-              <ChevronRight className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 hover:bg-white/80 rounded-xl hover-scale-sm transition-all"
+              onClick={() => {
+                const newDate = new Date(selectedDate)
+                newDate.setDate(newDate.getDate() + 1)
+                setSelectedDate(newDate)
+              }}
+            >
+              <ChevronRight className="h-5 w-5" strokeWidth={2.5} />
             </Button>
           </div>
         </div>
       </div>
 
       <div className="px-6 py-6 space-y-6 max-w-lg mx-auto">
-        {/* Budget Summary Cards */}
+        {/* Enhanced Budget Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Daily Total */}
-          <Card className="p-6 bg-white/90 backdrop-blur border-0 shadow-lg hover:shadow-xl transition-all cursor-pointer">
+          {/* Daily Total - Enhanced */}
+          <Card className="p-6 glass-strong border border-white/40 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover-scale-sm rounded-2xl">
             <div className="space-y-3">
-              <p className="text-sm text-gray-500">Total</p>
-              <p className="text-3xl font-bold">${totalToday.toFixed(0)}</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</p>
+              <p className="text-4xl font-bold text-gray-900">${totalToday.toFixed(0)}</p>
               <div className="flex gap-2">
                 {todayCategories.slice(0, 3).map((cat) => {
-                  const { icon: Icon, color } = getCategoryIcon(cat.name)
+                  const { icon: Icon, bgGradient, glowColor } = getCategoryIcon(cat.name)
                   return (
-                    <div key={cat.name} className={`w-10 h-10 rounded-full ${color} flex items-center justify-center`}>
-                      <Icon className="h-5 w-5" />
+                    <div key={cat.name} className={`w-11 h-11 rounded-xl ${bgGradient} flex items-center justify-center shadow-lg ${glowColor} hover-scale transition-all`}>
+                      <Icon className="h-6 w-6 text-white" strokeWidth={2.5} />
                     </div>
                   )
                 })}
               </div>
-              <p className="text-xs text-gray-400">Budget</p>
+              <p className="text-xs text-gray-500 font-medium">Budget</p>
             </div>
           </Card>
 

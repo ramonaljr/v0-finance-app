@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
+import { materializeKpiCacheForUser } from "@/lib/cache/materialize-kpi"
+import { materializeCalendarCacheForUser } from "@/lib/cache/materialize-calendar"
 
 export const dynamic = 'force-dynamic'
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const supabase = await createClient()
 
@@ -13,25 +16,40 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Call the edge function to refresh caches for all users
-    const { data, error } = await supabase.functions.invoke('refresh-caches')
+    // Parse request body for optional parameters
+    const body = await request.json().catch(() => ({}))
+    const periods = body.periods // Optional: specific periods to refresh
 
-    if (error) {
-      console.error('Edge function error:', error)
-      return NextResponse.json({ error: "Failed to refresh caches" }, { status: 500 })
-    }
+    // Use service client for cache operations (bypasses RLS)
+    const serviceClient = createServiceClient()
 
-    // Find the result for the current user
-    const userResult = data?.results?.find((r: any) => r.user_id === user.id)
+    // Materialize KPI cache for the user
+    const kpiResults = await materializeKpiCacheForUser(
+      serviceClient,
+      user.id,
+      periods
+    )
+
+    // Materialize calendar cache for the user
+    const calendarResults = await materializeCalendarCacheForUser(
+      serviceClient,
+      user.id,
+      periods
+    )
 
     return NextResponse.json({
       success: true,
       message: "Caches refreshed successfully",
-      user_result: userResult,
-      all_results: data
+      kpi_periods: kpiResults.length,
+      calendar_periods: calendarResults.length,
+      kpi_results: kpiResults,
+      calendar_results: calendarResults
     })
   } catch (error) {
     console.error('Cache refresh error:', error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }

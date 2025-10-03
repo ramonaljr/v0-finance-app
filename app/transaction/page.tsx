@@ -165,67 +165,67 @@ export default function TransactionPage() {
   const filteredTransactions = transactions.filter((t) => t.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-gray-50/30 pb-20">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 pb-6 pt-8">
+      <header className="border-b border-gray-200 bg-white px-6 pb-6 pt-8">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Transactions</h1>
-              <p className="text-sm text-muted-foreground">October 2024</p>
+              <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+              <p className="text-sm font-medium text-gray-600">October 2024</p>
             </div>
-            <Button size="sm" variant="outline" className="gap-2 bg-transparent">
-              <Download className="h-4 w-4" />
+            <Button size="sm" variant="outline" className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all rounded-xl h-9 font-semibold">
+              <Download className="h-4 w-4" strokeWidth={2.5} />
               Export
             </Button>
           </div>
 
           {/* Summary Cards */}
           <div className="mb-6 grid grid-cols-3 gap-3">
-            <Card className="bg-card p-4">
-              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                <Receipt className="h-5 w-5 text-muted-foreground" />
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/20 border-2 border-white">
+                <Receipt className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
-              <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-xl font-bold text-foreground">142</p>
-              <p className="text-xs text-muted-foreground">transactions</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</p>
+              <p className="text-xl font-bold text-gray-900">142</p>
+              <p className="text-xs font-medium text-gray-600">transactions</p>
             </Card>
 
-            <Card className="bg-card p-4">
-              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950">
-                <ArrowDownRight className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/20 border-2 border-white">
+                <ArrowDownRight className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
-              <p className="text-xs text-muted-foreground">Expenses</p>
-              <p className="text-xl font-bold text-foreground">$1,724</p>
-              <p className="text-xs text-red-600 dark:text-red-400">+12% vs last</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Expenses</p>
+              <p className="text-xl font-bold text-gray-900">$1,724</p>
+              <p className="text-xs font-semibold text-red-600">+12% vs last</p>
             </Card>
 
-            <Card className="bg-card p-4">
-              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950">
-                <ArrowUpRight className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-2 border-white">
+                <ArrowUpRight className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
-              <p className="text-xs text-muted-foreground">Income</p>
-              <p className="text-xl font-bold text-foreground">$5,200</p>
-              <p className="text-xs text-muted-foreground">Same as last</p>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Income</p>
+              <p className="text-xl font-bold text-gray-900">$5,200</p>
+              <p className="text-xs font-medium text-gray-600">Same as last</p>
             </Card>
           </div>
 
           {/* Search and Filter */}
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" strokeWidth={2.5} />
               <Input
                 placeholder="Search transactions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 rounded-xl h-9 border-gray-300 shadow-sm"
               />
             </div>
-            <Button variant="outline" size="icon" className="shrink-0 bg-transparent">
-              <Filter className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="shrink-0 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
+              <Filter className="h-4 w-4" strokeWidth={2.5} />
             </Button>
-            <Button variant="outline" size="icon" className="shrink-0 bg-transparent">
-              <CalendarIcon className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="shrink-0 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
+              <CalendarIcon className="h-4 w-4" strokeWidth={2.5} />
             </Button>
           </div>
         </div>
@@ -237,56 +237,56 @@ export default function TransactionPage() {
           <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0">
             <TabsTrigger
               value="reports"
-              className="rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
+              className="rounded-xl border border-gray-300 bg-white shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:border-0 data-[state=active]:shadow-lg font-semibold transition-all"
             >
               Reports
             </TabsTrigger>
             <TabsTrigger
               value="stats"
-              className="gap-1.5 rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
+              className="gap-1.5 rounded-xl border border-gray-300 bg-white shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:border-0 data-[state=active]:shadow-lg font-semibold transition-all"
             >
-              <BarChart3 className="h-4 w-4" />
+              <BarChart3 className="h-4 w-4" strokeWidth={2.5} />
               Stats
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="reports" className="space-y-6">
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Calendar & Transactions</h3>
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Calendar & Transactions</h3>
               <FinancialCalendar />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Dec 14, Mon</h3>
-                <p className="text-sm font-semibold text-red-600 dark:text-red-400">OUT $60.75</p>
+                <h3 className="text-sm font-bold text-gray-900">Dec 14, Mon</h3>
+                <p className="text-sm font-bold text-red-600">OUT $60.75</p>
               </div>
               {filteredTransactions.slice(0, 4).map((transaction) => {
                 const Icon = transaction.icon
                 const isIncome = transaction.amount > 0
 
                 return (
-                  <Card key={transaction.id} className="bg-card p-4 transition-all hover:shadow-md">
+                  <Card key={transaction.id} className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div
-                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${transaction.bgColor}`}
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${isIncome ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-2 border-white' : 'bg-gray-50'}`}
                       >
-                        <Icon className={`h-6 w-6 ${transaction.iconColor}`} />
+                        <Icon className={`h-7 w-7 ${isIncome ? 'text-white' : 'text-gray-700'}`} strokeWidth={2.5} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-foreground">{transaction.name}</p>
-                        <p className="text-xs text-muted-foreground">{transaction.category}</p>
-                        <p className="text-xs text-muted-foreground">{transaction.date}</p>
+                        <p className="truncate font-bold text-gray-900">{transaction.name}</p>
+                        <p className="text-xs font-semibold text-gray-600">{transaction.category}</p>
+                        <p className="text-xs font-medium text-gray-600">{transaction.date}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="text-right">
                           <p
-                            className={`text-lg font-bold ${isIncome ? "text-green-600 dark:text-green-400" : "text-foreground"}`}
+                            className={`text-xl font-bold ${isIncome ? "text-green-600" : "text-gray-900"}`}
                           >
                             {isIncome ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
                           </p>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
                       </div>
                     </div>
                   </Card>
@@ -297,14 +297,14 @@ export default function TransactionPage() {
 
           <TabsContent value="stats" className="space-y-6">
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Spending Overview</h3>
-              <Card className="bg-card p-6">
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Spending Overview</h3>
+              <Card className="bg-white p-6 rounded-2xl shadow-md">
                 <div className="mb-6 text-center">
-                  <p className="text-sm font-medium text-muted-foreground">Total Spending</p>
-                  <p className="text-4xl font-bold text-foreground">${totalSpending.toFixed(2)}</p>
-                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 dark:bg-red-950 px-3 py-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-400">+12% from last month</span>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Total Spending</p>
+                  <p className="text-4xl font-bold text-gray-900">${totalSpending.toFixed(2)}</p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-red-600" strokeWidth={2.5} />
+                    <span className="text-sm font-semibold text-red-600">+12% from last month</span>
                   </div>
                 </div>
 
@@ -314,11 +314,11 @@ export default function TransactionPage() {
                   {pieChartData.map((item) => (
                     <div key={item.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-                        <span className="text-sm font-medium text-foreground">{item.name}</span>
-                        <span className="text-sm text-muted-foreground">{item.percentage}%</span>
+                        <div className="h-3 w-3 rounded-full shadow-lg" style={{ backgroundColor: item.fill }} />
+                        <span className="text-sm font-bold text-gray-900">{item.name}</span>
+                        <span className="text-sm font-semibold text-gray-600">{item.percentage}%</span>
                       </div>
-                      <span className="text-sm font-semibold text-foreground">${item.value.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-gray-900">${item.value.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -327,35 +327,35 @@ export default function TransactionPage() {
 
             {/* Monthly Overview */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Monthly Overview</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Card className="bg-card p-5">
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Monthly Overview</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <DollarSign className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/20 border-2 border-white">
+                      <DollarSign className="h-6 w-6 text-white" strokeWidth={2.5} />
                     </div>
-                    <Badge variant="outline">Avg</Badge>
+                    <Badge variant="outline" className="font-semibold">Avg</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">Daily Spending</p>
-                  <p className="text-2xl font-bold text-foreground">$57.46</p>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Daily Spending</p>
+                  <p className="text-2xl font-bold text-gray-900">$57.46</p>
                   <div className="mt-2 flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-                    <span className="text-xs text-red-600 dark:text-red-400">+8% from average</span>
+                    <TrendingUp className="h-3.5 w-3.5 text-red-600" strokeWidth={2.5} />
+                    <span className="text-xs font-semibold text-red-600">+8% from average</span>
                   </div>
                 </Card>
 
-                <Card className="bg-card p-5">
+                <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className="mb-3 flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <Receipt className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/20 border-2 border-white">
+                      <Receipt className="h-6 w-6 text-white" strokeWidth={2.5} />
                     </div>
-                    <Badge variant="outline">Avg</Badge>
+                    <Badge variant="outline" className="font-semibold">Avg</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">Per Transaction</p>
-                  <p className="text-2xl font-bold text-foreground">$12.14</p>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Per Transaction</p>
+                  <p className="text-2xl font-bold text-gray-900">$12.14</p>
                   <div className="mt-2 flex items-center gap-1">
-                    <TrendingDown className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    <span className="text-xs text-green-600 dark:text-green-400">-3% from average</span>
+                    <TrendingDown className="h-3.5 w-3.5 text-green-600" strokeWidth={2.5} />
+                    <span className="text-xs font-semibold text-green-600">-3% from average</span>
                   </div>
                 </Card>
               </div>
@@ -364,23 +364,23 @@ export default function TransactionPage() {
             {/* Spending by Category */}
             <div>
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Category Details</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Category Details</h3>
               </div>
 
-              <Card className="bg-card p-5">
+              <Card className="bg-white p-5 rounded-2xl shadow-md">
                 <div className="space-y-4">
                   {categoryStats.map((category) => (
                     <div key={category.name}>
                       <div className="mb-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.chartColor }} />
-                          <span className="text-sm font-medium text-foreground">{category.name}</span>
-                          <span className="text-sm text-muted-foreground">({category.count})</span>
+                          <div className="h-3 w-3 rounded-full shadow-lg" style={{ backgroundColor: category.chartColor }} />
+                          <span className="text-sm font-bold text-gray-900">{category.name}</span>
+                          <span className="text-sm font-semibold text-gray-600">({category.count})</span>
                         </div>
-                        <span className="text-sm font-semibold text-foreground">${category.amount.toFixed(2)}</span>
+                        <span className="text-sm font-bold text-gray-900">${category.amount.toFixed(2)}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-50">
                           <div
                             className="h-full rounded-full transition-all"
                             style={{
@@ -389,7 +389,7 @@ export default function TransactionPage() {
                             }}
                           />
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground">{category.percentage}%</span>
+                        <span className="text-sm font-semibold text-gray-600">{category.percentage}%</span>
                       </div>
                     </div>
                   ))}
@@ -400,30 +400,30 @@ export default function TransactionPage() {
             {/* Weekly Spending Trend */}
             <div>
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Weekly Spending Trend</h3>
-                <Button size="sm" variant="ghost" className="h-8 gap-1.5">
-                  <BarChart3 className="h-4 w-4" />
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Weekly Spending Trend</h3>
+                <Button size="sm" variant="ghost" className="h-9 gap-1.5 hover:bg-gray-50 rounded-xl font-semibold">
+                  <BarChart3 className="h-4 w-4" strokeWidth={2.5} />
                   Details
                 </Button>
               </div>
 
-              <Card className="bg-card p-5">
+              <Card className="bg-white p-5 rounded-2xl shadow-md">
                 <div className="grid grid-cols-7 gap-2">
                   {[
-                    { day: "Mon", amount: 45, height: 40, color: "bg-gradient-to-t from-blue-500 to-cyan-400" },
-                    { day: "Tue", amount: 78, height: 70, color: "bg-gradient-to-t from-emerald-500 to-teal-400" },
-                    { day: "Wed", amount: 52, height: 50, color: "bg-gradient-to-t from-purple-500 to-indigo-400" },
-                    { day: "Thu", amount: 95, height: 85, color: "bg-gradient-to-t from-pink-500 to-rose-400" },
-                    { day: "Fri", amount: 120, height: 100, color: "bg-gradient-to-t from-orange-500 to-amber-400" },
-                    { day: "Sat", amount: 88, height: 75, color: "bg-gradient-to-t from-indigo-500 to-purple-400" },
-                    { day: "Sun", amount: 62, height: 55, color: "bg-gradient-to-t from-cyan-500 to-blue-400" },
+                    { day: "Mon", amount: 45, height: 40, color: "bg-gradient-to-t from-blue-500 to-cyan-400 shadow-lg" },
+                    { day: "Tue", amount: 78, height: 70, color: "bg-gradient-to-t from-emerald-500 to-teal-400 shadow-lg" },
+                    { day: "Wed", amount: 52, height: 50, color: "bg-gradient-to-t from-purple-500 to-indigo-400 shadow-lg" },
+                    { day: "Thu", amount: 95, height: 85, color: "bg-gradient-to-t from-pink-500 to-rose-400 shadow-lg" },
+                    { day: "Fri", amount: 120, height: 100, color: "bg-gradient-to-t from-orange-500 to-amber-400 shadow-lg" },
+                    { day: "Sat", amount: 88, height: 75, color: "bg-gradient-to-t from-indigo-500 to-purple-400 shadow-lg" },
+                    { day: "Sun", amount: 62, height: 55, color: "bg-gradient-to-t from-cyan-500 to-blue-400 shadow-lg" },
                   ].map((day) => (
                     <div key={day.day} className="flex flex-col items-center">
                       <div className="mb-2 flex h-24 w-full items-end">
                         <div className={`w-full rounded-t-lg ${day.color}`} style={{ height: `${day.height}%` }} />
                       </div>
-                      <p className="text-xs font-medium text-foreground">{day.day}</p>
-                      <p className="text-xs text-muted-foreground">${day.amount}</p>
+                      <p className="text-xs font-bold text-gray-900">{day.day}</p>
+                      <p className="text-xs font-semibold text-gray-600">${day.amount}</p>
                     </div>
                   ))}
                 </div>
@@ -432,58 +432,58 @@ export default function TransactionPage() {
 
             {/* Top Merchants */}
             <div>
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Top Merchants</h3>
-              <Card className="divide-y divide-border bg-card">
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Top Merchants</h3>
+              <Card className="divide-y divide-gray-100 bg-white rounded-2xl shadow-md">
                 {[
                   {
                     name: "Whole Foods",
                     amount: 487.32,
                     transactions: 12,
                     icon: ShoppingBag,
-                    bgColor: "bg-gray-100 dark:bg-muted",
-                    iconColor: "text-gray-700 dark:text-muted-foreground",
+                    bgGradient: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+                    glowColor: "shadow-emerald-500/20",
                   },
                   {
                     name: "Shell Gas",
                     amount: 215.8,
                     transactions: 8,
                     icon: Car,
-                    bgColor: "bg-gray-100 dark:bg-muted",
-                    iconColor: "text-gray-700 dark:text-muted-foreground",
+                    bgGradient: "bg-gradient-to-br from-blue-500 to-blue-600",
+                    glowColor: "shadow-blue-500/20",
                   },
                   {
                     name: "Amazon",
                     amount: 425.0,
                     transactions: 15,
                     icon: ShoppingBag,
-                    bgColor: "bg-gray-100 dark:bg-muted",
-                    iconColor: "text-gray-700 dark:text-muted-foreground",
+                    bgGradient: "bg-gradient-to-br from-pink-500 to-pink-600",
+                    glowColor: "shadow-pink-500/20",
                   },
                   {
                     name: "Starbucks",
                     amount: 156.25,
                     transactions: 18,
                     icon: Coffee,
-                    bgColor: "bg-gray-100 dark:bg-muted",
-                    iconColor: "text-gray-700 dark:text-muted-foreground",
+                    bgGradient: "bg-gradient-to-br from-orange-500 to-orange-600",
+                    glowColor: "shadow-orange-500/20",
                   },
                 ].map((merchant, index) => {
                   const Icon = merchant.icon
                   return (
-                    <div key={merchant.name} className="flex items-center gap-4 p-4">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold text-muted-foreground">
+                    <div key={merchant.name} className="flex items-center gap-4 p-5 hover:bg-gray-50 transition-all cursor-pointer">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold text-gray-600">
                         #{index + 1}
                       </div>
                       <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${merchant.bgColor}`}
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${merchant.bgGradient} shadow-lg ${merchant.glowColor} border-2 border-white`}
                       >
-                        <Icon className={`h-5 w-5 ${merchant.iconColor}`} />
+                        <Icon className="h-6 w-6 text-white" strokeWidth={2.5} />
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-foreground">{merchant.name}</p>
-                        <p className="text-xs text-muted-foreground">{merchant.transactions} transactions</p>
+                        <p className="font-bold text-gray-900">{merchant.name}</p>
+                        <p className="text-xs font-semibold text-gray-600">{merchant.transactions} transactions</p>
                       </div>
-                      <p className="text-lg font-bold text-foreground">${merchant.amount.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-gray-900">${merchant.amount.toFixed(2)}</p>
                     </div>
                   )
                 })}
@@ -491,17 +491,17 @@ export default function TransactionPage() {
             </div>
 
             {/* AI Insights */}
-            <Card className="border-border bg-muted p-4">
+            <Card className="border-0 bg-gradient-to-br from-purple-50 to-indigo-50 p-5 rounded-2xl shadow-md">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-foreground">
-                  <Sparkles className="h-5 w-5 text-background" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/20 border-2 border-white">
+                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Spending Pattern Detected</p>
-                    <Badge className="border-0 bg-muted-foreground/20 text-xs">AI</Badge>
+                    <p className="text-sm font-bold text-gray-900">Spending Pattern Detected</p>
+                    <Badge className="border-0 bg-purple-100 text-purple-700 text-xs font-semibold">AI</Badge>
                   </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-sm leading-relaxed font-medium text-gray-700">
                     Your weekend spending is 45% higher than weekdays. Setting a weekend budget could save you
                     $180/month.
                   </p>

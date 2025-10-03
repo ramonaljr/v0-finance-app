@@ -7,7 +7,7 @@ import { Suspense } from "react"
 import { ThemeProvider } from "@/contexts/theme-context"
 import { QueryProvider } from "@/components/ui/query-provider"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
-import "./globals.css"
+import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "FinanceFlow - Smart Money Management",

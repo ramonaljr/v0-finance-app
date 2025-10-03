@@ -59,17 +59,92 @@ export async function POST(request: Request) {
       }, { status: 409 })
     }
 
-    // TODO: For zero-based budgets, validate that sum of allocated_minor equals income
-    // TODO: Implement actual budget creation with items in transaction
+    // Create budget and items in transaction
+    const { data: budget, error: budgetError } = await supabase
+      .from('budgets')
+      .insert({
+        user_id: user.id,
+        period_year,
+        period_month,
+        type,
+        rollover
+      })
+      .select()
+      .single()
 
-    return NextResponse.json({
-      id: "stub",
-      message: "Budget validation passed - implementation pending"
-    }, { status: 201 })
+    if (budgetError) {
+      console.error('Budget creation error:', budgetError)
+      return NextResponse.json({ error: "Failed to create budget" }, { status: 500 })
+    }
+
+    // Insert budget items if provided
+    if (items.length > 0) {
+      const { error: itemsError } = await supabase
+        .from('budget_items')
+        .insert(
+          items.map(item => ({
+            ...item,
+            budget_id: budget.id
+          }))
+        )
+
+      if (itemsError) {
+        console.error('Budget items creation error:', itemsError)
+        // Clean up the budget if items fail
+        await supabase.from('budgets').delete().eq('id', budget.id)
+        return NextResponse.json({ error: "Failed to create budget items" }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json(budget, { status: 201 })
   } catch (error) {
     console.error('Budget POST error:', error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const period_year = searchParams.get("period_year")
+    const period_month = searchParams.get("period_month")
+
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    let query = supabase
+      .from('budgets')
+      .select(`
+        *,
+        items:budget_items(
+          *,
+          category:categories(id, name, icon, color)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('period_year', { ascending: false })
+      .order('period_month', { ascending: false })
+
+    if (period_year && period_month) {
+      query = query
+        .eq('period_year', parseInt(period_year))
+        .eq('period_month', parseInt(period_month))
+    }
+
+    const { data: budgets, error } = await query
+
+    if (error) {
+      console.error('Error fetching budgets:', error)
+      return NextResponse.json({ error: "Failed to fetch budgets" }, { status: 500 })
+    }
+
+    return NextResponse.json({ budgets: budgets || [] })
+  } catch (error) {
+    console.error('Budget GET error:', error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
 

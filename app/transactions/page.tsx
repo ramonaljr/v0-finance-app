@@ -1,203 +1,468 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getCategoryIcon } from "@/lib/category-icons"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ArrowUpCircle, ArrowDownCircle, Plus, X, Pencil, Trash2, AlertCircle } from "lucide-react"
 
-export default function TransactionsNewPage() {
-  const [selectedDate, setSelectedDate] = useState(15)
-  const [selectedMonth, setSelectedMonth] = useState("2020 Dec")
+interface Transaction {
+  id: string
+  amount_minor: number
+  currency_code: string
+  direction: 'in' | 'out'
+  occurred_at: string
+  payee: string | null
+  notes: string | null
+  category?: { id: string; name: string; icon?: string; color?: string }
+  account?: { id: string; name: string; type: string }
+  category_id?: string | null
+  account_id?: string | null
+}
 
-  const calendarDays = [
-    { day: 30, amount: 7.63, isOtherMonth: true },
-    { day: 1, amount: 7.63 },
-    { day: 2, amount: 21.37 },
-    { day: 3, amount: 76.35 },
-    { day: 4, amount: 76.35 },
-    { day: 5, amount: 15.27 },
-    { day: 6, amount: 3.05 },
-    { day: 7, amount: 15.27 },
-    { day: 8, amount: 15.27 },
-    { day: 9, amount: 30.54 },
-    { day: 10, amount: 15.27 },
-    { day: 11, amount: 305.42 },
-    { day: 12, amount: 61.08 },
-    { day: 13, amount: 64.13 },
-    { day: 14, amount: 15.27 },
-    { day: 15, amount: 60.75, isToday: true },
-    { day: 16, amount: 76.35 },
-    { day: 17, amount: 15.27 },
-    { day: 18, amount: 30.54 },
-    { day: 19, amount: 0 },
-    { day: 20, amount: 0 },
-    { day: 21, amount: 0 },
-    { day: 22, amount: 122.16 },
-    { day: 23, amount: 0 },
-    { day: 24, amount: 0 },
-    { day: 25, amount: 0 },
-    { day: 26, amount: 0 },
-    { day: 27, amount: 0 },
-    { day: 28, amount: 30.54 },
-  ]
+interface Category {
+  id: string
+  name: string
+  icon?: string
+  color?: string
+}
 
-  const transactions = [
-    { category: "Food & Drink", subcategory: "Breakfast", detail: "Coffee ☕", amount: -5, time: "10:50 AM", icon: "💳" },
-    { category: "Health Care", subcategory: "Dental", detail: "", amount: -8, time: "10:45 AM", icon: "⚕️" },
-    { category: "Shopping", subcategory: "Clothing", detail: "", amount: -100, time: "10:40 AM", icon: "🛍️" },
-    { category: "Housing", subcategory: "Housing&Utilities", detail: "", amount: -20, time: "10:36 AM", icon: "🏠" },
-  ]
+interface Account {
+  id: string
+  name: string
+  type: string
+}
 
-  const monthlyStats = {
-    income: 503.93,
-    spending: 691.38,
-    balance: -187.45,
+export default function TransactionsPage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    amount: '',
+    direction: 'out' as 'in' | 'out',
+    payee: '',
+    notes: '',
+    category_id: '',
+    account_id: '',
+    occurred_at: new Date().toISOString().split('T')[0]
+  })
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+
+    setUser(user)
+
+    try {
+      // Load transactions
+      const txResponse = await fetch('/api/transactions?limit=50')
+      if (txResponse.ok) {
+        const txData = await txResponse.json()
+        setTransactions(txData.transactions || [])
+      }
+
+      // Load categories
+      const catResponse = await fetch('/api/categories')
+      if (catResponse.ok) {
+        const catData = await catResponse.json()
+        setCategories(catData.categories || [])
+      }
+
+      // Load accounts
+      const accResponse = await fetch('/api/accounts')
+      if (accResponse.ok) {
+        const accData = await accResponse.json()
+        setAccounts(accData.accounts || [])
+      }
+    } catch (error) {
+      console.error('Error loading data:', error)
+    }
+
+    setLoading(false)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const amount = parseFloat(formData.amount)
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount')
+        return
+      }
+
+      if (editingId) {
+        // Update existing transaction
+        const updateData = {
+          amount_minor: Math.round(amount * 100),
+          direction: formData.direction,
+          occurred_at: new Date(formData.occurred_at).toISOString(),
+          payee: formData.payee || null,
+          notes: formData.notes || null,
+          category_id: formData.category_id || null,
+          account_id: formData.account_id || null,
+        }
+
+        const response = await fetch(`/api/transactions/${editingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData)
+        })
+
+        if (response.ok) {
+          resetForm()
+          await loadData()
+          await refreshCache()
+        } else {
+          const error = await response.json()
+          alert(`Error: ${error.error || 'Failed to update transaction'}`)
+        }
+      } else {
+        // Create new transaction
+        const transaction = {
+          amount_minor: Math.round(amount * 100),
+          currency_code: 'USD',
+          direction: formData.direction,
+          occurred_at: new Date(formData.occurred_at).toISOString(),
+          payee: formData.payee || null,
+          notes: formData.notes || null,
+          category_id: formData.category_id || null,
+          account_id: formData.account_id || null,
+        }
+
+        const response = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactions: [transaction] })
+        })
+
+        if (response.ok) {
+          resetForm()
+          await loadData()
+          await refreshCache()
+        } else {
+          const error = await response.json()
+          alert(`Error: ${error.error || 'Failed to create transaction'}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error saving transaction:', error)
+      alert('Failed to save transaction')
+    }
+  }
+
+  const startEdit = (transaction: Transaction) => {
+    setEditingId(transaction.id)
+    setFormData({
+      amount: (transaction.amount_minor / 100).toString(),
+      direction: transaction.direction,
+      payee: transaction.payee || '',
+      notes: transaction.notes || '',
+      category_id: transaction.category_id || '',
+      account_id: transaction.account_id || '',
+      occurred_at: new Date(transaction.occurred_at).toISOString().split('T')[0]
+    })
+    setShowAddForm(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/transactions/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setDeleteConfirmId(null)
+        await loadData()
+        await refreshCache()
+      } else {
+        const error = await response.json()
+        alert(`Error: ${error.error || 'Failed to delete transaction'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error)
+      alert('Failed to delete transaction')
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      amount: '',
+      direction: 'out',
+      payee: '',
+      notes: '',
+      category_id: '',
+      account_id: '',
+      occurred_at: new Date().toISOString().split('T')[0]
+    })
+    setShowAddForm(false)
+    setEditingId(null)
+  }
+
+  const refreshCache = async () => {
+    try {
+      await fetch('/api/cache/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+    } catch (error) {
+      console.error('Cache refresh error:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading transactions...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 pb-20">
-      {/* Header with Search */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b px-6 py-4">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-100 rounded-full">
-            <span className="text-xs font-medium">Daily</span>
-          </div>
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Food | category , sub-category , notes"
-              className="pl-10 bg-white border-gray-200 text-sm h-10"
-            />
-          </div>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+          <Button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="bg-gradient-to-r from-indigo-500 to-purple-600"
+          >
+            {showAddForm ? <X className="h-5 w-5 mr-2" /> : <Plus className="h-5 w-5 mr-2" />}
+            {showAddForm ? 'Cancel' : 'Add Transaction'}
+          </Button>
         </div>
-      </div>
 
-      <div className="px-6 py-4 space-y-6 max-w-lg mx-auto">
-        {/* Calendar Card */}
-        <Card className="p-6 bg-white/90 backdrop-blur border-0 shadow-lg">
-          {/* Month Navigation */}
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon">
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">{selectedMonth}</span>
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs bg-gray-100">
-                Month▼
-              </Button>
-            </div>
-            <Button variant="ghost" size="icon">
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="mb-4">
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                <div key={day} className="text-center text-xs text-gray-400 font-medium">
-                  {day}
+        {/* Add/Edit Transaction Form */}
+        {showAddForm && (
+          <Card className="p-6 mb-6">
+            <h2 className="text-lg font-bold mb-4">
+              {editingId ? 'Edit Transaction' : 'New Transaction'}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Amount</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    required
+                  />
                 </div>
-              ))}
+                <div>
+                  <Label>Type</Label>
+                  <Select value={formData.direction} onValueChange={(value: 'in' | 'out') => setFormData({ ...formData, direction: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="out">Expense</SelectItem>
+                      <SelectItem value="in">Income</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Payee / Description</Label>
+                <Input
+                  placeholder="e.g., Starbucks"
+                  value={formData.payee}
+                  onChange={(e) => setFormData({ ...formData, payee: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Category</Label>
+                  <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.icon} {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Account</Label>
+                  <Select value={formData.account_id} onValueChange={(value) => setFormData({ ...formData, account_id: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={formData.occurred_at}
+                  onChange={(e) => setFormData({ ...formData, occurred_at: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>Notes</Label>
+                <Input
+                  placeholder="Optional notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button type="submit" className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600">
+                  {editingId ? 'Update Transaction' : 'Add Transaction'}
+                </Button>
+                {editingId && (
+                  <Button type="button" variant="outline" onClick={resetForm}>
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </form>
+          </Card>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {deleteConfirmId && (
+          <Card className="p-6 mb-6 border-2 border-red-200 bg-red-50">
+            <div className="flex items-start gap-4">
+              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Transaction?</h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  This action cannot be undone. The transaction will be permanently deleted.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDelete(deleteConfirmId)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                  <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
             </div>
+          </Card>
+        )}
 
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-1">
-              {calendarDays.map((dayData, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedDate(dayData.day)}
-                  className={`
-                    aspect-square rounded-lg p-1 text-center transition-all
-                    ${dayData.isToday ? 'bg-yellow-300 font-semibold' : 'hover:bg-gray-50'}
-                    ${dayData.isOtherMonth ? 'text-gray-300' : 'text-gray-700'}
-                    ${selectedDate === dayData.day && !dayData.isOtherMonth ? 'ring-2 ring-yellow-400' : ''}
-                  `}
-                >
-                  <div className="text-sm">{dayData.day}</div>
-                  {dayData.amount > 0 && (
-                    <div className={`text-[10px] ${dayData.amount > 50 ? 'text-red-500' : 'text-gray-500'}`}>
-                      ${dayData.amount}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Monthly Summary */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Dec Income</p>
-              <p className="text-lg font-bold text-green-600">${monthlyStats.income}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Dec Spending</p>
-              <p className="text-lg font-bold text-red-600">${monthlyStats.spending}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Dec Balance</p>
-              <p className={`text-lg font-bold ${monthlyStats.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                ${monthlyStats.balance >= 0 ? '+' : ''}{monthlyStats.balance}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Daily Transactions */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Dec 14, Mon</h3>
-            <span className="text-sm">
-              <span className="text-red-500 font-semibold">OUT</span> ${transactions.reduce((sum, t) => sum + Math.abs(t.amount), 0)}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {transactions.map((transaction, idx) => {
-              const { icon: Icon, color } = getCategoryIcon(transaction.category)
-
-              return (
-                <Card
-                  key={idx}
-                  className="p-4 bg-white/90 backdrop-blur border-0 shadow hover:shadow-md transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{transaction.category}</span>
-                        {transaction.icon && <span className="text-xs">{transaction.icon}</span>}
+        {/* Transactions List */}
+        <div className="space-y-3">
+          {transactions.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-gray-600 mb-4">No transactions yet</p>
+              <Button onClick={() => setShowAddForm(true)}>Add Your First Transaction</Button>
+            </Card>
+          ) : (
+            transactions.map((tx) => (
+              <Card key={tx.id} className="p-4 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 flex-1">
+                    {tx.direction === 'in' ? (
+                      <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {transaction.subcategory && (
-                          <>
-                            <span className="text-gray-400">☕</span>
-                            <span>{transaction.subcategory}</span>
-                          </>
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <ArrowDownCircle className="h-5 w-5 text-red-600" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{tx.payee || 'Unknown'}</p>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
+                        {tx.category && (
+                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                            {tx.category.icon} {tx.category.name}
+                          </span>
                         )}
-                        {transaction.detail && <span className="ml-1">{transaction.detail}</span>}
+                        <span className="text-xs text-gray-500">
+                          {new Date(tx.occurred_at).toLocaleDateString()}
+                        </span>
                       </div>
-                    </div>
-
-                    <div className="text-right flex-shrink-0">
-                      <div className={`text-lg font-bold ${transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                        {transaction.amount < 0 ? '-' : '+'}${Math.abs(transaction.amount)}
-                      </div>
-                      <div className="text-xs text-gray-400">{transaction.time}</div>
                     </div>
                   </div>
-                </Card>
-              )
-            })}
-          </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <p className={`font-bold text-lg ${tx.direction === 'in' ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {tx.direction === 'in' ? '+' : '-'}${(tx.amount_minor / 100).toFixed(2)}
+                      </p>
+                      {tx.account && (
+                        <p className="text-xs text-gray-500">{tx.account.name}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => startEdit(tx)}
+                        className="h-8 w-8"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteConfirmId(tx.id)}
+                        className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       </div>
 

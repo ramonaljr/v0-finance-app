@@ -1,3 +1,8 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,244 +15,247 @@ import { ThemeToggleButton } from "@/components/theme-toggle-button"
 
 const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
 
+interface KPIData {
+  income_minor: number
+  expense_minor: number
+  net_minor: number
+  top_cats: Array<{ category_id: string; amount_minor: number }>
+}
+
+interface Account {
+  id: string
+  name: string
+  type: string
+  balance_minor: number
+}
+
 export default function HomePage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [kpiData, setKpiData] = useState<KPIData | null>(null)
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuthAndLoadData = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+
+      setUser(user)
+
+      // Fetch KPI data for current month
+      const currentDate = new Date()
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+      const ym = `${year}-${month.toString().padStart(2, '0')}`
+
+      try {
+        // Fetch KPI data
+        const kpiResponse = await fetch(`/api/stats/period?ym=${ym}`)
+        if (kpiResponse.ok) {
+          const kpiJson = await kpiResponse.json()
+          setKpiData(kpiJson)
+        }
+
+        // Fetch accounts
+        const accountsResponse = await fetch('/api/accounts')
+        if (accountsResponse.ok) {
+          const accountsJson = await accountsResponse.json()
+          setAccounts(accountsJson.accounts || [])
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+
+      setLoading(false)
+    }
+
+    checkAuthAndLoadData()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
+  // Calculate totals
+  const income = (kpiData?.income_minor || 0) / 100
+  const expenses = (kpiData?.expense_minor || 0) / 100
+  const net = (kpiData?.net_minor || 0) / 100
+  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance_minor, 0) / 100
+
+  // Get user initials
+  const userEmail = user.email || 'User'
+  const initials = userEmail.substring(0, 2).toUpperCase()
+
   return (
-    <div className="min-h-screen bg-background pb-20 modern-soft:bg-background">
+    <div className="min-h-screen bg-gray-50/30 pb-20">
       <main className="mx-auto max-w-lg">
-        <div className="border-b bg-card px-6 pb-6 pt-8 modern-soft:bg-surface modern-soft:border-border/50 modern-soft:shadow-sm">
+        {/* Enhanced Header */}
+        <div className="border-b bg-white px-6 pb-6 pt-8 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-border">
-                <AvatarFallback className="bg-muted text-foreground font-semibold">JD</AvatarFallback>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-lg shadow-primary/10 ring-2 ring-offset-2 ring-primary/10">
+                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-lg">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm text-muted-foreground">Welcome back</p>
-                <h1 className="text-xl font-semibold text-foreground">John Doe</h1>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Welcome back</p>
+                <h1 className="text-xl font-bold text-gray-900">{userEmail.split('@')[0]}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggleButton />
-              <Button size="icon" variant="ghost" className="h-10 w-10 hover:bg-muted">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-10 w-10 hover:bg-gray-100 hover-scale-sm rounded-xl transition-all"
+                onClick={() => router.push('/auth/login')}
+              >
                 <Eye className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          <div className="rounded-xl border bg-muted/30 p-6 modern-soft:rounded-card modern-soft:bg-surface-alt modern-soft:border-border/50 modern-soft:shadow-sm">
-            <p className="mb-2 text-sm font-medium text-muted-foreground">Total Net Worth</p>
-            <p className="mb-4 text-4xl font-bold tracking-tight text-foreground tabular-nums">$2,382,919.69</p>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-success" />
-                <span className="text-sm text-muted-foreground">Assets: $2.5M</span>
+          {/* Enhanced Balance Card */}
+          <div className="rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/30 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover-scale-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 pulse-glow" />
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Balance</p>
+            </div>
+            <p className="mb-4 text-4xl lg:text-5xl font-bold tracking-tight text-gradient-primary tabular-nums">
+              ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2.5">
+                <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm shadow-emerald-500/50" />
+                <span className="text-sm font-medium text-gray-700">
+                  Income: <span className="font-bold text-emerald-600">${income.toFixed(2)}</span>
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-destructive" />
-                <span className="text-sm text-muted-foreground">Liabilities: $117K</span>
+              <div className="flex items-center gap-2.5">
+                <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-sm shadow-red-500/50" />
+                <span className="text-sm font-medium text-gray-700">
+                  Expenses: <span className="font-bold text-red-600">${expenses.toFixed(2)}</span>
+                </span>
               </div>
             </div>
           </div>
         </div>
 
+        {/* This Month Summary */}
         <div className="px-6 py-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Brain className="h-4 w-4 text-primary" />
-              </div>
-              <h2 className="text-lg font-semibold text-foreground">AI Insights</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">This Month</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <Card className="p-4 text-center hover:shadow-lg transition-all">
+              <p className="text-2xl font-bold text-emerald-600">${income.toFixed(0)}</p>
+              <p className="text-xs text-gray-600 mt-1">Income</p>
+            </Card>
+            <Card className="p-4 text-center hover:shadow-lg transition-all">
+              <p className="text-2xl font-bold text-red-600">${expenses.toFixed(0)}</p>
+              <p className="text-xs text-gray-600 mt-1">Expenses</p>
+            </Card>
+            <Card className="p-4 text-center hover:shadow-lg transition-all">
+              <p className={`text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${net.toFixed(0)}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">Net</p>
+            </Card>
+          </div>
+        </div>
+
+        {/* Accounts */}
+        <div className="px-6 pb-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1.5 text-indigo-600 hover:bg-indigo-50 font-semibold rounded-xl px-3"
+              onClick={() => router.push('/account')}
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              Add
+            </Button>
+          </div>
+
+          {accounts.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-gray-600 mb-4">No accounts yet</p>
+              <Button onClick={() => router.push('/account')}>Add Your First Account</Button>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {accounts.map((account) => (
+                <Card key={account.id} className="p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-lg
+                        ${account.type === 'checking' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 border-indigo-200 shadow-indigo-500/20' : ''}
+                        ${account.type === 'savings' ? 'bg-gradient-to-br from-emerald-400 to-green-600 border-emerald-200 shadow-emerald-500/20' : ''}
+                        ${account.type === 'credit' ? 'bg-gradient-to-br from-red-400 to-red-600 border-red-200 shadow-red-500/20' : ''}
+                        ${account.type === 'investment' ? 'bg-gradient-to-br from-amber-400 to-orange-600 border-amber-200 shadow-amber-500/20' : ''}
+                        ${account.type === 'cash' ? 'bg-gradient-to-br from-gray-500 to-gray-700 border-gray-200 shadow-gray-500/20' : ''}
+                      `}>
+                        <span className="text-sm font-bold text-white">{account.name.substring(0, 2).toUpperCase()}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{account.name}</p>
+                        <p className="text-xs text-gray-500 font-medium capitalize">{account.type}</p>
+                      </div>
+                    </div>
+                    <p className={`text-lg font-bold tabular-nums ${account.balance_minor >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
+                      ${(account.balance_minor / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </Card>
+              ))}
             </div>
-            <Badge variant="secondary" className="gap-1.5 bg-muted text-muted-foreground border">
-              <Sparkles className="h-3 w-3" />
-              <span className="text-xs font-medium">AI Powered</span>
-            </Badge>
-          </div>
+          )}
 
-          <div className="space-y-3">
-            <Card className="border-l-4 border-l-warning p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10 modern-soft:rounded-sm modern-soft:bg-warning-soft">
-                  <Zap className="h-5 w-5 text-warning" />
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">Spending Alert</p>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <p className="mb-2 text-sm text-muted-foreground leading-relaxed">
-                    You've spent 15% more on dining out this month compared to your average.
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs border-warning/30 text-warning bg-warning/5">
-                      Save $120/month
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">• Meal prep recommended</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="border-l-4 border-l-success p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-success/10 modern-soft:rounded-sm modern-soft:bg-success-soft">
-                  <TrendingUp className="h-5 w-5 text-success" />
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">Investment Opportunity</p>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <p className="mb-2 text-sm text-muted-foreground leading-relaxed">
-                    Your portfolio is performing well. Consider increasing your monthly contribution by $200.
-                  </p>
-                  <Badge variant="outline" className="text-xs border-success/30 text-success bg-success/5">
-                    +$24K potential gain/year
-                  </Badge>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="border-l-4 border-l-primary p-4 hover:shadow-sm transition-shadow cursor-pointer modern-soft:rounded-card modern-soft:shadow-sm modern-soft:card-hover">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 modern-soft:rounded-sm modern-soft:bg-primary-soft">
-                  <Target className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center justify-between">
-                    <p className="text-sm font-semibold text-foreground">Goal Progress</p>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <p className="mb-2 text-sm text-muted-foreground leading-relaxed">
-                    You're on track to reach your Emergency Fund goal 2 months early!
-                  </p>
-                  <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/5">
-                    75% complete
-                  </Badge>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <Button variant="outline" className="mt-4 w-full gap-2 border-dashed bg-transparent">
-            <Sparkles className="h-4 w-4" />
-            Get More AI Insights
-            <ArrowRight className="h-4 w-4 ml-auto" />
+          <Button
+            variant="outline"
+            className="mt-5 w-full bg-white border-2 hover:bg-gray-50 h-12 rounded-xl font-semibold hover-scale-sm transition-all"
+            onClick={() => router.push('/account')}
+          >
+            Manage Accounts
+            <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
 
+        {/* Quick Actions */}
         <div className="px-6 pb-6">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">Savings Goals</h2>
-            <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/10">
-              <Plus className="h-4 w-4" />
-              Add Goal
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              className="h-24 flex flex-col gap-2 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              onClick={() => router.push('/transaction')}
+            >
+              <Plus className="h-6 w-6" />
+              <span>Add Transaction</span>
             </Button>
-          </div>
-          <div className="space-y-3">
-            <Card className="p-4 hover:shadow-sm transition-shadow">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Target className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Emergency Fund</p>
-                    <p className="text-xs text-muted-foreground">2 months ahead of schedule</p>
-                  </div>
-                </div>
-                <p className="text-sm font-semibold text-primary">75%</p>
-              </div>
-              <Progress value={75} className="mb-2 h-2" />
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">$7,500 of $10,000</span>
-                <span className="font-medium text-foreground">$2,500 to go</span>
-              </div>
-            </Card>
-
-            <Card className="p-4 hover:shadow-sm transition-shadow">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
-                    <Target className="h-5 w-5 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Vacation Fund</p>
-                    <p className="text-xs text-muted-foreground">On track for June 2025</p>
-                  </div>
-                </div>
-                <p className="text-sm font-semibold text-success">40%</p>
-              </div>
-              <Progress value={40} className="mb-2 h-2" />
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">$2,000 of $5,000</span>
-                <span className="font-medium text-foreground">$3,000 to go</span>
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        <div className="px-6 pb-6">
-          <div className="mb-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Accounts</h2>
-              <Button variant="ghost" size="sm" className="h-8 gap-1 text-primary hover:bg-primary/10">
-                <Plus className="h-4 w-4" />
-                Add
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              <Card className="p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                      <span className="text-sm font-bold text-primary">HS</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">HSBC Checking</p>
-                      <p className="text-xs text-muted-foreground">****1234</p>
-                    </div>
-                  </div>
-                  <p className="text-base font-bold text-foreground">$45,280.50</p>
-                </div>
-              </Card>
-
-              <Card className="p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-destructive/10 border border-destructive/20">
-                      <span className="text-sm font-bold text-destructive">HS</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">HSBC Credit</p>
-                      <p className="text-xs text-muted-foreground">****5678 • Due Oct 15</p>
-                    </div>
-                  </div>
-                  <p className="text-base font-bold text-destructive">-$2,450.00</p>
-                </div>
-              </Card>
-
-              <Card className="p-4 hover:shadow-sm transition-shadow">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-success/10 border border-success/20">
-                      <TrendingUp className="h-5 w-5 text-success" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Investment Portfolio</p>
-                      <p className="text-xs text-success">+12.5% this year</p>
-                    </div>
-                  </div>
-                  <p className="text-base font-bold text-foreground">$310,000</p>
-                </div>
-              </Card>
-            </div>
-
-            <Button variant="outline" className="mt-4 w-full bg-transparent" asChild>
-              <a href="/account">
-                View All Accounts
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
+            <Button
+              className="h-24 flex flex-col gap-2 bg-gradient-to-br from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+              onClick={() => router.push('/budget')}
+            >
+              <Target className="h-6 w-6" />
+              <span>View Budget</span>
             </Button>
           </div>
         </div>

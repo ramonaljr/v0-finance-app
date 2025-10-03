@@ -184,48 +184,48 @@ export default function BudgetPage() {
   const recurringPercentage = (totalRecurring / totalMonthlyObligations) * 100
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-gray-50/30 pb-20">
       {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card px-6 pb-6 pt-8">
+      <header className="relative z-10 border-b border-border bg-white px-6 pb-6 pt-8">
         <div className="mx-auto max-w-lg">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Budget</h1>
-              <p className="text-sm text-muted-foreground">Manage your spending</p>
+              <h1 className="text-2xl font-bold text-gray-900">Budget</h1>
+              <p className="text-sm text-gray-600">Manage your spending</p>
             </div>
-            <Button size="sm" className="gap-2 bg-foreground text-background hover:bg-foreground/90">
-              <Plus className="h-4 w-4" />
+            <Button size="sm" className="gap-2 h-9 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all rounded-xl">
+              <Plus className="h-4 w-4 strokeWidth={2.5}" />
               Add Category
             </Button>
           </div>
 
           {/* Month Selector */}
-          <div className="mb-6 flex items-center justify-between rounded-xl border border-border bg-card p-3">
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-border bg-white p-3">
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" strokeWidth={2.5} />
             </Button>
-            <span className="text-sm font-semibold text-foreground">{currentMonth}</span>
+            <span className="text-sm font-semibold text-gray-900">{currentMonth}</span>
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
             </Button>
           </div>
 
           {/* Budget Overview */}
-          <Card className="bg-card p-6 shadow-sm">
+          <Card className="bg-white p-6 shadow-md rounded-2xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Spent</p>
-                <p className="text-3xl font-bold text-foreground">${totalSpent.toFixed(2)}</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Spent</p>
+                <p className="text-3xl font-bold text-gray-900">${totalSpent.toFixed(2)}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-muted-foreground">Budget</p>
-                <p className="text-2xl font-bold text-foreground">${totalBudget.toFixed(2)}</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Budget</p>
+                <p className="text-2xl font-bold text-gray-900">${totalBudget.toFixed(2)}</p>
               </div>
             </div>
             <Progress value={percentageUsed} className="mb-3 h-3" />
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{percentageUsed.toFixed(1)}% of budget used</span>
-              <span className="text-sm font-semibold text-foreground">
+              <span className="text-sm text-gray-600">{percentageUsed.toFixed(1)}% of budget used</span>
+              <span className="text-sm font-semibold text-gray-900">
                 ${(totalBudget - totalSpent).toFixed(2)} remaining
               </span>
             </div>
@@ -239,49 +239,49 @@ export default function BudgetPage() {
           <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0 pointer-events-auto">
             <TabsTrigger
               value="plan"
-              className="rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
+              className="rounded-xl border bg-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-md data-[state=active]:shadow-lg transition-all"
             >
               Plan
             </TabsTrigger>
             <TabsTrigger
               value="recurring"
-              className="gap-1.5 rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
+              className="gap-1.5 rounded-xl border bg-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-md data-[state=active]:shadow-lg transition-all"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" strokeWidth={2.5} />
               Recurring
             </TabsTrigger>
             <TabsTrigger
               value="stats"
-              className="gap-1.5 rounded-lg border bg-card data-[state=active]:bg-foreground data-[state=active]:text-background"
+              className="gap-1.5 rounded-xl border bg-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white shadow-md data-[state=active]:shadow-lg transition-all"
             >
-              <PieChartIcon className="h-4 w-4" />
+              <PieChartIcon className="h-4 w-4" strokeWidth={2.5} />
               Stats
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="plan" className="space-y-6">
             {/* AI Insights */}
-            <Card className="border-blue-200 bg-card p-4 dark:border-blue-800">
+            <Card className="border-blue-200 bg-white p-4 dark:border-blue-800 shadow-md rounded-2xl">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg">
-                  <Sparkles className="h-5 w-5 text-white" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 border-2 border-white">
+                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Budget Insight</p>
+                    <p className="text-sm font-semibold text-gray-900">Budget Insight</p>
                     <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
                       AI
                     </Badge>
                   </div>
-                  <p className="mb-2 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mb-2 text-sm leading-relaxed text-gray-600">
                     You're over budget on Dining Out by $42. Consider meal prepping to save $120/month.
                   </p>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 gap-1 border-blue-300 bg-background dark:border-blue-700"
+                    className="h-8 gap-1 border-blue-300 bg-white dark:border-blue-700 rounded-xl"
                   >
-                    <Target className="h-3 w-3" />
+                    <Target className="h-3 w-3" strokeWidth={2.5} />
                     View Tips
                   </Button>
                 </div>
@@ -290,50 +290,50 @@ export default function BudgetPage() {
 
             {/* Budget Categories */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Categories</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Categories</h3>
               {budgetCategories.map((category) => {
                 const percentage = (category.spent / category.budget) * 100
                 const isOver = category.spent > category.budget
                 const isWarning = percentage > 85 && !isOver
 
                 return (
-                  <Card key={category.id} className="bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <Card key={category.id} className="bg-white p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl">
                     <div className="mb-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${category.bg}`}>
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${category.bg}`}>
                           <span className="text-2xl">{category.icon}</span>
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{category.name}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-semibold text-gray-900">{category.name}</p>
+                          <p className="text-xs text-gray-600">
                             ${category.spent.toFixed(2)} of ${category.budget.toFixed(2)}
                           </p>
                         </div>
                       </div>
                       {isOver && (
                         <Badge className="border-0 bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 gap-1">
-                          <AlertCircle className="h-3 w-3" />
+                          <AlertCircle className="h-3 w-3" strokeWidth={2.5} />
                           Over
                         </Badge>
                       )}
                       {isWarning && (
                         <Badge className="border-0 bg-yellow-100 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 gap-1">
-                          <AlertCircle className="h-3 w-3" />
+                          <AlertCircle className="h-3 w-3" strokeWidth={2.5} />
                           {percentage.toFixed(0)}%
                         </Badge>
                       )}
                     </div>
                     <Progress
                       value={Math.min(percentage, 100)}
-                      className={`mb-2 h-2 ${isOver ? "[&>div]:bg-red-600" : isWarning ? "[&>div]:bg-yellow-600" : ""}`}
+                      className={`mb-2 h-2.5 ${isOver ? "[&>div]:bg-red-600" : isWarning ? "[&>div]:bg-yellow-600" : ""}`}
                     />
                     <div className="flex items-center justify-between text-sm">
                       <span
-                        className={`font-medium ${isOver ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}
+                        className={`font-medium ${isOver ? "text-red-600 dark:text-red-400" : "text-gray-600"}`}
                       >
                         {percentage.toFixed(1)}% used
                       </span>
-                      <span className="font-semibold text-foreground">
+                      <span className="font-semibold text-gray-900">
                         ${Math.max(category.budget - category.spent, 0).toFixed(2)} left
                       </span>
                     </div>
@@ -344,28 +344,28 @@ export default function BudgetPage() {
 
             {/* Spending Trends */}
             <div className="mt-8">
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Spending Trends</h3>
+              <h3 className="mb-4 text-sm font-semibold text-gray-900">Spending Trends</h3>
               <div className="grid grid-cols-2 gap-3">
-                <Card className="bg-card p-4 shadow-sm">
+                <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950">
-                      <TrendingDown className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20">
+                      <TrendingDown className="h-5 w-5 text-white" strokeWidth={2.5} />
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">vs Last Month</span>
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">vs Last Month</span>
                   </div>
                   <p className="text-xl font-bold text-green-600 dark:text-green-400">-8.5%</p>
-                  <p className="text-xs text-muted-foreground">Saved $142</p>
+                  <p className="text-xs text-gray-600">Saved $142</p>
                 </Card>
 
-                <Card className="bg-card p-4 shadow-sm">
+                <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-                      <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20">
+                      <DollarSign className="h-5 w-5 text-white" strokeWidth={2.5} />
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">Avg Daily</span>
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Avg Daily</span>
                   </div>
-                  <p className="text-xl font-bold text-foreground">$59.46</p>
-                  <p className="text-xs text-muted-foreground">This month</p>
+                  <p className="text-xl font-bold text-gray-900">$59.46</p>
+                  <p className="text-xs text-gray-600">This month</p>
                 </Card>
               </div>
             </div>
@@ -373,55 +373,55 @@ export default function BudgetPage() {
 
           <TabsContent value="recurring" className="space-y-6">
             {/* Recurring Overview */}
-            <Card className="bg-card p-6 shadow-sm">
+            <Card className="bg-white p-6 shadow-md rounded-2xl">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Monthly Recurring</p>
-                  <p className="text-3xl font-bold text-foreground">${totalRecurring.toFixed(2)}</p>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Monthly Recurring</p>
+                  <p className="text-3xl font-bold text-gray-900">${totalRecurring.toFixed(2)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-muted-foreground">Paid This Month</p>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Paid This Month</p>
                   <p className="text-2xl font-bold text-green-600">${paidRecurring.toFixed(2)}</p>
                 </div>
               </div>
               <Progress value={(paidRecurring / totalRecurring) * 100} className="mb-3 h-3 [&>div]:bg-green-600" />
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-gray-600">
                   {recurringExpenses.filter((e) => e.status === "paid").length} of {recurringExpenses.length} paid
                 </span>
-                <span className="text-sm font-semibold text-foreground">${upcomingRecurring.toFixed(2)} upcoming</span>
+                <span className="text-sm font-semibold text-gray-900">${upcomingRecurring.toFixed(2)} upcoming</span>
               </div>
             </Card>
 
             {/* AI Insights for Recurring */}
-            <Card className="border-purple-200 bg-card p-4 dark:border-purple-800">
+            <Card className="border-purple-200 bg-white p-4 dark:border-purple-800 shadow-md rounded-2xl">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg">
-                  <Sparkles className="h-5 w-5 text-white" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/20 border-2 border-white">
+                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Smart Budget Analysis</p>
+                    <p className="text-sm font-semibold text-gray-900">Smart Budget Analysis</p>
                     <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
                       AI
                     </Badge>
                   </div>
-                  <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                  <p className="mb-3 text-sm leading-relaxed text-gray-600">
                     Your recurring expenses account for {recurringPercentage.toFixed(1)}% (${totalRecurring.toFixed(2)})
                     of your total monthly obligations. After fixed expenses, you have ${discretionaryBudget.toFixed(2)}{" "}
                     for discretionary spending.
                   </p>
                   <div className="space-y-2">
                     <div className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" />
-                      <span className="text-muted-foreground">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" strokeWidth={2.5} />
+                      <span className="text-gray-600">
                         {recurringExpenses.filter((e) => e.autopay).length} bills on autopay - reducing late payment
                         risk
                       </span>
                     </div>
                     <div className="flex items-start gap-2 text-sm">
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                      <span className="text-muted-foreground">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" strokeWidth={2.5} />
+                      <span className="text-gray-600">
                         Credit card payment of $
                         {recurringExpenses.find((e) => e.id === "credit-card")?.amount.toFixed(2)} due on the 22nd - not
                         on autopay
@@ -434,35 +434,35 @@ export default function BudgetPage() {
 
             {/* Budget Breakdown */}
             <div className="grid grid-cols-2 gap-3">
-              <Card className="bg-card p-4">
+              <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-                    <RefreshCw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20">
+                    <RefreshCw className="h-5 w-5 text-white" strokeWidth={2.5} />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">Fixed Expenses</span>
+                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Fixed Expenses</span>
                 </div>
-                <p className="text-xl font-bold text-foreground">${totalRecurring.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">{recurringPercentage.toFixed(1)}% of income</p>
+                <p className="text-xl font-bold text-gray-900">${totalRecurring.toFixed(2)}</p>
+                <p className="text-xs text-gray-600">{recurringPercentage.toFixed(1)}% of income</p>
               </Card>
 
-              <Card className="bg-card p-4">
+              <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950">
-                    <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20">
+                    <DollarSign className="h-5 w-5 text-white" strokeWidth={2.5} />
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">Discretionary</span>
+                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Discretionary</span>
                 </div>
-                <p className="text-xl font-bold text-foreground">${discretionaryBudget.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">{(100 - recurringPercentage).toFixed(1)}% available</p>
+                <p className="text-xl font-bold text-gray-900">${discretionaryBudget.toFixed(2)}</p>
+                <p className="text-xs text-gray-600">{(100 - recurringPercentage).toFixed(1)}% available</p>
               </Card>
             </div>
 
             {/* Recurring Expenses List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Monthly Bills</h3>
-                <Button size="sm" variant="outline" className="h-8 gap-1.5 bg-transparent">
-                  <Plus className="h-3 w-3" />
+                <h3 className="text-sm font-semibold text-gray-900">Monthly Bills</h3>
+                <Button size="sm" variant="outline" className="h-9 gap-1.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-all">
+                  <Plus className="h-3 w-3" strokeWidth={2.5} />
                   Add Bill
                 </Button>
               </div>
@@ -475,43 +475,43 @@ export default function BudgetPage() {
                   const isUpcoming = expense.status === "upcoming"
 
                   return (
-                    <Card key={expense.id} className="bg-card p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <Card key={expense.id} className="bg-white p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <div
-                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${expense.bgColor}`}
+                            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${expense.bgColor}`}
                           >
-                            <Icon className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+                            <Icon className="h-7 w-7 text-gray-700 dark:text-gray-300" strokeWidth={2.5} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold text-foreground">{expense.name}</p>
+                              <p className="font-semibold text-gray-900">{expense.name}</p>
                               {expense.autopay && (
                                 <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
                                   Auto
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground mb-2">{expense.category}</p>
+                            <p className="text-xs text-gray-600 mb-2">{expense.category}</p>
                             <div className="flex items-center gap-2 text-xs">
-                              <Calendar className="h-3 w-3 text-muted-foreground dark:text-gray-500" />
-                              <span className="text-muted-foreground dark:text-gray-300">
+                              <Calendar className="h-3 w-3 text-gray-600" strokeWidth={2.5} />
+                              <span className="text-gray-600">
                                 Due: {currentMonth.split(" ")[0]} {expense.dueDate}
                               </span>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-foreground mb-1">${expense.amount.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-gray-900 mb-1">${expense.amount.toFixed(2)}</p>
                           {isPaid && (
                             <Badge className="border-0 bg-green-100 text-green-700 text-xs dark:bg-green-900 dark:text-green-300">
-                              <CheckCircle2 className="h-3 w-3" />
+                              <CheckCircle2 className="h-3 w-3" strokeWidth={2.5} />
                               Paid
                             </Badge>
                           )}
                           {isUpcoming && (
                             <Badge className="border-0 bg-amber-100 text-amber-700 text-xs dark:bg-amber-900 dark:text-amber-300">
-                              <Clock className="h-3 w-3" />
+                              <Clock className="h-3 w-3" strokeWidth={2.5} />
                               Upcoming
                             </Badge>
                           )}
@@ -523,23 +523,23 @@ export default function BudgetPage() {
             </div>
 
             {/* Payment Calendar */}
-            <Card className="bg-card p-4">
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Payment Schedule</h3>
+            <Card className="bg-white p-4 shadow-md rounded-2xl">
+              <h3 className="mb-4 text-sm font-semibold text-gray-900">Payment Schedule</h3>
               <div className="space-y-2">
                 {recurringExpenses
                   .sort((a, b) => a.dueDate - b.dueDate)
                   .map((expense) => (
                     <div
                       key={expense.id}
-                      className="flex items-center justify-between py-2 border-b border-border dark:border-border-inverted last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700 last:border-0"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-900 text-xs font-semibold text-muted-foreground dark:text-foreground">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-900 text-xs font-semibold text-gray-900 dark:text-gray-100">
                           {expense.dueDate}
                         </div>
-                        <span className="text-sm text-foreground">{expense.name}</span>
+                        <span className="text-sm text-gray-900">{expense.name}</span>
                       </div>
-                      <span className="text-sm font-semibold text-foreground">${expense.amount.toFixed(2)}</span>
+                      <span className="text-sm font-semibold text-gray-900">${expense.amount.toFixed(2)}</span>
                     </div>
                   ))}
               </div>
@@ -548,33 +548,33 @@ export default function BudgetPage() {
 
           <TabsContent value="stats" className="space-y-6">
             {/* Pie Chart */}
-            <Card className="bg-card p-6">
+            <Card className="bg-white p-6 shadow-md rounded-2xl">
               <div className="mb-6 text-center">
-                <p className="text-sm font-medium text-muted-foreground">Total Budget</p>
-                <p className="text-4xl font-bold text-foreground">${totalBudget.toFixed(0)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">${totalSpent.toFixed(2)} spent</p>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Budget</p>
+                <p className="text-4xl font-bold text-gray-900">${totalBudget.toFixed(0)}</p>
+                <p className="mt-1 text-sm text-gray-600">${totalSpent.toFixed(2)} spent</p>
               </div>
 
               <BudgetPieChart data={pieChartData} />
 
               {/* Category Breakdown */}
               <div>
-                <h3 className="mb-4 text-sm font-semibold text-foreground">Category Breakdown</h3>
+                <h3 className="mb-4 text-sm font-semibold text-gray-900">Category Breakdown</h3>
                 <div className="space-y-3">
                   {budgetCategories.map((category) => {
                     const percentage = (category.spent / category.budget) * 100
                     const isOver = category.spent > category.budget
 
                     return (
-                      <Card key={category.id} className="bg-card p-4">
+                      <Card key={category.id} className="bg-gray-50 p-4 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl">
                         <div className="mb-3 flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${category.bg}`}>
+                            <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${category.bg}`}>
                               <span className="text-xl">{category.icon}</span>
                             </div>
                             <div>
-                              <p className="font-semibold text-foreground">{category.name}</p>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="font-semibold text-gray-900">{category.name}</p>
+                              <p className="text-xs text-gray-600">
                                 ${category.spent.toFixed(2)} of ${category.budget.toFixed(2)}
                               </p>
                             </div>
@@ -585,7 +585,7 @@ export default function BudgetPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="mb-2 h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
                           <div
                             className="h-full transition-all"
                             style={{
@@ -596,11 +596,11 @@ export default function BudgetPage() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span
-                            className={`font-medium ${isOver ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}
+                            className={`font-medium ${isOver ? "text-red-600 dark:text-red-400" : "text-gray-600"}`}
                           >
                             {percentage.toFixed(1)}% used
                           </span>
-                          <span className="font-semibold text-foreground">
+                          <span className="font-semibold text-gray-900">
                             ${Math.max(category.budget - category.spent, 0).toFixed(2)} left
                           </span>
                         </div>
@@ -612,19 +612,19 @@ export default function BudgetPage() {
             </Card>
 
             {/* AI Insights */}
-            <Card className="border-blue-200 bg-card p-4 dark:border-blue-800">
+            <Card className="border-blue-200 bg-white p-4 dark:border-blue-800 shadow-md rounded-2xl">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg">
-                  <Sparkles className="h-5 w-5 text-white" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 border-2 border-white">
+                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-foreground">Budget Insight</p>
+                    <p className="text-sm font-semibold text-gray-900">Budget Insight</p>
                     <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
                       AI
                     </Badge>
                   </div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-sm leading-relaxed text-gray-600">
                     Your largest spending category is Shopping at $
                     {budgetCategories.find((c) => c.id === "shopping")?.spent.toFixed(2)}. Consider setting subcategory
                     limits to track spending better.

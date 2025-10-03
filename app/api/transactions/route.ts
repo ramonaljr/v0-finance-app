@@ -87,4 +87,70 @@ export async function POST(request: Request) {
   }
 }
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get("limit") || "50")
+    const offset = parseInt(searchParams.get("offset") || "0")
+    const category_id = searchParams.get("category_id")
+    const account_id = searchParams.get("account_id")
+    const start_date = searchParams.get("start_date")
+    const end_date = searchParams.get("end_date")
+    const direction = searchParams.get("direction")
+
+    const supabase = await createClient()
+
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    let query = supabase
+      .from('transactions')
+      .select(`
+        *,
+        category:categories(id, name, icon, color),
+        account:accounts(id, name, type)
+      `)
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('occurred_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    // Apply filters
+    if (category_id) {
+      query = query.eq('category_id', category_id)
+    }
+    if (account_id) {
+      query = query.eq('account_id', account_id)
+    }
+    if (start_date) {
+      query = query.gte('occurred_at', start_date)
+    }
+    if (end_date) {
+      query = query.lte('occurred_at', end_date)
+    }
+    if (direction && (direction === 'in' || direction === 'out')) {
+      query = query.eq('direction', direction)
+    }
+
+    const { data: transactions, error } = await query
+
+    if (error) {
+      console.error('Error fetching transactions:', error)
+      return NextResponse.json({ error: "Failed to fetch transactions" }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      transactions: transactions || [],
+      count: transactions?.length || 0,
+      limit,
+      offset
+    })
+  } catch (error) {
+    console.error('Transaction GET error:', error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
 

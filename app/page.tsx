@@ -37,45 +37,83 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+    const abortController = new AbortController()
+
     const checkAuthAndLoadData = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      setUser(user)
-
-      // Fetch KPI data for current month
-      const currentDate = new Date()
-      const year = currentDate.getFullYear()
-      const month = currentDate.getMonth() + 1
-      const ym = `${year}-${month.toString().padStart(2, '0')}`
-
       try {
-        // Fetch KPI data
-        const kpiResponse = await fetch(`/api/stats/period?ym=${ym}`)
-        if (kpiResponse.ok) {
-          const kpiJson = await kpiResponse.json()
-          setKpiData(kpiJson)
+        const supabase = createClient()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError) {
+          console.error('Error retrieving session:', sessionError)
+          return
         }
 
-        // Fetch accounts
-        const accountsResponse = await fetch('/api/accounts')
-        if (accountsResponse.ok) {
-          const accountsJson = await accountsResponse.json()
-          setAccounts(accountsJson.accounts || [])
+        const currentUser = session?.user
+
+        if (!currentUser) {
+          router.replace('/auth/login')
+          return
+        }
+
+        if (!isMounted) return
+        setUser(currentUser)
+
+        const currentDate = new Date()
+        const year = currentDate.getFullYear()
+        const month = currentDate.getMonth() + 1
+        const ym = `${year}-${month.toString().padStart(2, '0')}`
+
+        try {
+          const [kpiResult, accountsResult] = await Promise.allSettled([
+            fetch(`/api/stats/period?ym=${ym}`, { signal: abortController.signal }),
+            fetch('/api/accounts', { signal: abortController.signal }),
+          ])
+
+          if (!isMounted) return
+
+          if (kpiResult.status === 'fulfilled') {
+            if (kpiResult.value.ok) {
+              const kpiJson = await kpiResult.value.json()
+              setKpiData(kpiJson)
+            } else {
+              console.warn('KPI request failed:', kpiResult.value.status, kpiResult.value.statusText)
+            }
+          } else {
+            console.error('KPI request error:', kpiResult.reason)
+          }
+
+          if (accountsResult.status === 'fulfilled') {
+            if (accountsResult.value.ok) {
+              const accountsJson = await accountsResult.value.json()
+              setAccounts(accountsJson.accounts || [])
+            } else {
+              console.warn('Accounts request failed:', accountsResult.value.status, accountsResult.value.statusText)
+            }
+          } else {
+            console.error('Accounts request error:', accountsResult.reason)
+          }
+        } catch (error) {
+          if ((error as DOMException).name !== 'AbortError') {
+            console.error('Error fetching data:', error)
+          }
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error loading dashboard data:', error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-
-      setLoading(false)
     }
 
     checkAuthAndLoadData()
+
+    return () => {
+      isMounted = false
+      abortController.abort()
+    }
   }, [router])
 
   if (loading) {

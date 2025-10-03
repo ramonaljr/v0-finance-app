@@ -106,23 +106,41 @@ export async function fetchBudgets(): Promise<BudgetCategory[]> {
 }
 
 export async function fetchKPICache(period: string): Promise<KPICache | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!user) throw new Error('Not authenticated')
+    if (authError) {
+      console.error('Auth error in fetchKPICache:', authError)
+      return null
+    }
 
-  const [year, month] = period.split('-').map(Number)
+    if (!user) {
+      console.warn('No user found in fetchKPICache')
+      return null
+    }
 
-  const { data, error } = await supabase
-    .from('kpi_cache')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('period_year', year)
-    .eq('period_month', month)
-    .single()
+    const [year, month] = period.split('-').map(Number)
 
-  if (error && error.code !== 'PGRST116') throw error
-  return data || null
+    const { data, error } = await supabase
+      .from('kpi_cache')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('period_year', year)
+      .eq('period_month', month)
+      .single()
+
+    // PGRST116 = no rows returned (expected if cache empty)
+    if (error && error.code !== 'PGRST116') {
+      console.error('KPI cache fetch error:', error)
+      return null
+    }
+
+    return data || null
+  } catch (error) {
+    console.error('Unexpected error in fetchKPICache:', error)
+    return null
+  }
 }
 
 export async function fetchCalendarCache(year: number, month: number): Promise<CalendarCache | null> {
@@ -185,6 +203,9 @@ export function useKPICache(period?: string) {
     queryKey: queryKeys.kpiCache(currentPeriod),
     queryFn: () => fetchKPICache(currentPeriod),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1, // Only retry once
+    retryDelay: 1000, // 1 second between retries
+    gcTime: 5 * 60 * 1000, // Cache for 5 minutes
   })
 }
 

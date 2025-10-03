@@ -10,7 +10,25 @@ import { useFormattedKPICache } from "@/lib/hooks/use-api"
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const { data: kpiData } = useFormattedKPICache()
+  const { data: kpiData, isLoading, error } = useFormattedKPICache()
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-rose-50/40 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state (but still render UI with mock data)
+  if (error) {
+    console.error('Dashboard data error:', error)
+    // Continue rendering with mock data below
+  }
 
   const todayCategories = [
     { name: "Food & Drink", amount: 28.4, spent: 28.4, budget: 100 },

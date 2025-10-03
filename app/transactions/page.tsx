@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowUpCircle, ArrowDownCircle, Plus, X, Pencil, Trash2, AlertCircle } from "lucide-react"
+import { CalculatorInput } from "@/components/ui/calculator-input"
 
 interface Transaction {
   id: string
@@ -268,13 +269,10 @@ export default function TransactionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Amount</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
+                  <CalculatorInput
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    required
+                    onChange={(value) => setFormData({ ...formData, amount: value })}
+                    placeholder="0.00"
                   />
                 </div>
                 <div>

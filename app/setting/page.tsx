@@ -1,41 +1,28 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ThemeSelector } from "@/components/theme-selector"
-import { useTheme } from "@/contexts/theme-context"
 import {
   Bell,
-  Lock,
   Globe,
-  Moon,
-  Download,
-  Trash2,
   ChevronRight,
-  Shield,
-  HelpCircle,
-  FileText,
-  LogOut,
-  Palette,
-  Calendar,
-  DollarSign,
-  User,
   Sparkles,
   Camera,
-  Mail,
-  Phone,
-  CreditCard,
-  Smartphone,
-  Info,
-  Sun,
-  Laptop,
+  DollarSign,
+  LogOut,
+  Palette,
+  Loader2,
 } from "lucide-react"
-import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -43,12 +30,142 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-export default function SettingPage() {
-  const [notifications, setNotifications] = useState(true)
-  const [biometric, setBiometric] = useState(true)
-  const [twoFactor, setTwoFactor] = useState(false)
+interface UserData {
+  id: string
+  email: string
+  currency_code: string
+  country?: string
+  ai_consent_at?: string
+}
+
+export default function SettingPageNew() {
+  const router = useRouter()
+  const [user, setUser] = useState<UserData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isCurrencyDialogOpen, setIsCurrencyDialogOpen] = useState(false)
+  const [isCountryDialogOpen, setIsCountryDialogOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [tempCurrency, setTempCurrency] = useState("USD")
+  const [tempCountry, setTempCountry] = useState("")
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/user')
+      const data = await response.json()
+      if (data.user) {
+        setUser(data.user)
+        setTempCurrency(data.user.currency_code || "USD")
+        setTempCountry(data.user.country || "")
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveCurrency = async () => {
+    if (!user) return
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currency_code: tempCurrency,
+          country: user.country,
+          ai_consent_at: user.ai_consent_at,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchUserData()
+        setIsCurrencyDialogOpen(false)
+      }
+    } catch (error) {
+      console.error('Failed to update currency:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleSaveCountry = async () => {
+    if (!user) return
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currency_code: user.currency_code,
+          country: tempCountry,
+          ai_consent_at: user.ai_consent_at,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchUserData()
+        setIsCountryDialogOpen(false)
+      }
+    } catch (error) {
+      console.error('Failed to update country:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
+
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase()
+  }
+
+  const getCurrencySymbol = (code: string) => {
+    const symbols: Record<string, string> = {
+      USD: '$',
+      EUR: '€',
+      GBP: '£',
+      JPY: '¥',
+      PHP: '₱',
+    }
+    return symbols[code] || code
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
+        <p className="text-gray-600">Failed to load user data</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-20">
@@ -59,17 +176,15 @@ export default function SettingPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="mx-auto max-w-lg px-6 py-6">
-        <Card className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
+        <Card className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md">
           <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="p-1 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
                   <Avatar className="h-16 w-16 border-2 border-white">
-                    <AvatarImage src="/placeholder.svg?height=64&width=64" />
                     <AvatarFallback className="bg-white text-lg font-semibold text-gray-900">
-                      AJ
+                      {getInitials(user.email)}
                     </AvatarFallback>
                   </Avatar>
                 </div>
@@ -78,299 +193,122 @@ export default function SettingPage() {
                 </button>
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-900">Alex Johnson</h2>
-                <p className="text-sm text-gray-600">alex.johnson@email.com</p>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {user.email.split('@')[0]}
+                </h2>
+                <p className="text-sm text-gray-600">{user.email}</p>
                 <Badge className="mt-2 gap-1 border-0 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
                   <Sparkles className="h-3 w-3" strokeWidth={2.5} />
-                  Premium
+                  Free Plan
                 </Badge>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-gray-300 bg-white hover:bg-gray-50 rounded-xl h-9 shadow-sm"
-              >
-                Edit
-              </Button>
             </div>
-          </div>
-          <Separator className="bg-gray-200" />
-          <div className="grid grid-cols-3 divide-x divide-gray-200 bg-gray-50">
-            <button className="flex flex-col items-center gap-1.5 py-4 transition-all hover:bg-white">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/20 border-2 border-white">
-                <Mail className="h-5 w-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="text-xs font-medium text-gray-900">Email</span>
-            </button>
-            <button className="flex flex-col items-center gap-1.5 py-4 transition-all hover:bg-white">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/20 border-2 border-white">
-                <Phone className="h-5 w-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="text-xs font-medium text-gray-900">Phone</span>
-            </button>
-            <button className="flex flex-col items-center gap-1.5 py-4 transition-all hover:bg-white">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/20 border-2 border-white">
-                <User className="h-5 w-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="text-xs font-medium text-gray-900">Profile</span>
-            </button>
           </div>
         </Card>
 
         <div className="mb-6">
-          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">Appearance</h3>
-          <Card className="rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
-            {/* Theme Color - Only Option */}
-            <Dialog>
+          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">
+            Preferences
+          </h3>
+          <Card className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white shadow-md">
+            <Dialog open={isCurrencyDialogOpen} onOpenChange={setIsCurrencyDialogOpen}>
               <DialogTrigger asChild>
-                <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50 rounded-2xl">
+                <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/20 border-2 border-white">
-                      <Palette className="h-6 w-6 text-white" strokeWidth={2.5} />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/20 border-2 border-white">
+                      <DollarSign className="h-6 w-6 text-white" strokeWidth={2.5} />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Theme Color</p>
-                      <p className="text-sm text-gray-600 leading-relaxed">Customize your accent color</p>
+                      <p className="font-medium text-gray-900">Currency</p>
+                      <p className="text-sm text-gray-600">{user.currency_code} ({getCurrencySymbol(user.currency_code)})</p>
                     </div>
                   </div>
                   <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-bold">Choose Theme Color</DialogTitle>
-                  <DialogDescription>Select your preferred color theme for the app</DialogDescription>
+                  <DialogTitle>Change Currency</DialogTitle>
+                  <DialogDescription>Select your preferred currency</DialogDescription>
                 </DialogHeader>
-                <ThemeSelector />
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Currency</Label>
+                    <Select value={tempCurrency} onValueChange={setTempCurrency}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                        <SelectItem value="GBP">GBP (£)</SelectItem>
+                        <SelectItem value="JPY">JPY (¥)</SelectItem>
+                        <SelectItem value="PHP">PHP (₱)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCurrencyDialogOpen(false)} disabled={isSaving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveCurrency} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Save
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={isCountryDialogOpen} onOpenChange={setIsCountryDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/20 border-2 border-white">
+                      <Globe className="h-6 w-6 text-white" strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Country/Region</p>
+                      <p className="text-sm text-gray-600">{user.country || "Not set"}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change Country/Region</DialogTitle>
+                  <DialogDescription>Select your country or region</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Country</Label>
+                    <Input
+                      placeholder="e.g. United States"
+                      value={tempCountry}
+                      onChange={(e) => setTempCountry(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCountryDialogOpen(false)} disabled={isSaving}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveCountry} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                    Save
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </Card>
         </div>
 
-        <div className="mb-6">
-          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">Preferences</h3>
-          <Card className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/20 border-2 border-white">
-                  <DollarSign className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Currency</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">USD ($)</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/20 border-2 border-white">
-                  <Globe className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Language</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">English (US)</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 shadow-lg shadow-pink-500/20 border-2 border-white">
-                  <Calendar className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Start of Month</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">1st of each month</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-500 to-amber-500 shadow-lg shadow-yellow-500/20 border-2 border-white">
-                  <Bell className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Notifications</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Bills, budgets, insights</p>
-                </div>
-              </div>
-              <Switch checked={notifications} onCheckedChange={setNotifications} />
-            </div>
-          </Card>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">Security</h3>
-          <Card className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-rose-500 shadow-lg shadow-red-500/20 border-2 border-white">
-                  <Lock className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Change Password</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Last changed 3 months ago</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg shadow-blue-500/20 border-2 border-white">
-                  <Shield className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Add extra security layer</p>
-                </div>
-              </div>
-              <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
-            </div>
-
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 shadow-lg shadow-purple-500/20 border-2 border-white">
-                  <Smartphone className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Biometric Login</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Face ID or fingerprint</p>
-                </div>
-              </div>
-              <Switch checked={biometric} onCheckedChange={setBiometric} />
-            </div>
-
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-cyan-500 shadow-lg shadow-teal-500/20 border-2 border-white">
-                  <CreditCard className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Connected Accounts</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">3 banks linked</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="border-green-600 text-green-700"
-                >
-                  Active
-                </Badge>
-                <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-              </div>
-            </button>
-          </Card>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">
-            Data & Privacy
-          </h3>
-          <Card className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/20 border-2 border-white">
-                  <Download className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Export Data</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Download your financial data</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-slate-500 to-gray-500 shadow-lg shadow-slate-500/20 border-2 border-white">
-                  <FileText className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Privacy Policy</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">How we handle your data</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-          </Card>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="mb-3 px-1 text-xs font-semibold uppercase tracking-wider text-gray-600">Support</h3>
-          <Card className="divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition-shadow">
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/20 border-2 border-white">
-                  <HelpCircle className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Help Center</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">FAQs and guides</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <button className="flex w-full items-center justify-between p-5 text-left transition-all hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 shadow-lg shadow-violet-500/20 border-2 border-white">
-                  <FileText className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Terms of Service</p>
-                  <p className="text-sm text-gray-600 leading-relaxed">Legal information</p>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
-            </button>
-
-            <div className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-blue-500 shadow-lg shadow-sky-500/20 border-2 border-white">
-                    <Info className="h-6 w-6 text-white" strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">App Version</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">2.4.1 (Build 1024)</p>
-                  </div>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="border-green-600 text-green-700"
-                >
-                  Up to date
-                </Badge>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <Card className="mb-6 border-2 border-red-200 bg-red-50 rounded-2xl p-5 shadow-md hover:shadow-xl transition-shadow">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-rose-600 shadow-lg shadow-red-500/20 border-2 border-white">
-              <Trash2 className="h-6 w-6 text-white" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="font-semibold text-xl text-gray-900">Danger Zone</p>
-              <p className="text-sm text-gray-600">Irreversible actions</p>
-            </div>
-          </div>
-          <Button variant="destructive" className="w-full gap-2 bg-gradient-to-r from-red-500 to-rose-600 shadow-lg hover:shadow-xl transition-all rounded-xl h-12">
-            <Trash2 className="h-5 w-5" strokeWidth={2.5} />
-            Delete Account
-          </Button>
-        </Card>
-
-        {/* Logout Button */}
-        <Button variant="outline" className="w-full gap-2 border-gray-300 text-gray-900 hover:bg-gray-50 bg-white rounded-xl h-12 shadow-sm">
+        <Button
+          variant="outline"
+          className="w-full gap-2 border-gray-300 text-gray-900 hover:bg-gray-50 bg-white rounded-xl h-12 shadow-sm"
+          onClick={handleLogout}
+        >
           <LogOut className="h-5 w-5" strokeWidth={2.5} />
           Log Out
         </Button>

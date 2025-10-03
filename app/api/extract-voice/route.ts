@@ -28,10 +28,10 @@ export async function POST(req: Request) {
     const { transcript } = await req.json()
 
     const { object } = await generateObject({
-      model: "openai/gpt-5",
+      model: "openai/gpt-4o-mini", // Using GPT-4o-mini for best cost/performance
       schema: transactionSchema,
-      prompt: `Extract transaction information from this voice input: "${transcript}". 
-      If the date is not mentioned, use today's date. 
+      prompt: `Extract transaction information from this voice input: "${transcript}".
+      If the date is not mentioned, use today's date.
       Infer the most appropriate category based on the merchant and context.
       Examples:
       - "I spent $12.50 at Starbucks" → merchant: Starbucks, amount: 12.50, category: Food & Drink

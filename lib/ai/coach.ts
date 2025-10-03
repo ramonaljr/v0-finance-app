@@ -80,9 +80,9 @@ Guardrails:
     // Estimate token count (rough approximation)
     const estimatedTokens = JSON.stringify(openaiMessages).length / 4
 
-    // Cost guardrail: reject if too expensive
-    const maxEstimatedCost = 0.10 // $0.10 max per request
-    const estimatedCost = (estimatedTokens * 0.00015) + ((options.maxTokens || 500) * 0.0006)
+    // Cost guardrail: reject if too expensive (GPT-4o-mini is ~87% cheaper than GPT-3.5-turbo)
+    const maxEstimatedCost = 0.01 // $0.01 max per request (was $0.10, but GPT-4o-mini is much cheaper)
+    const estimatedCost = (estimatedTokens * 0.00015 / 1000) + ((options.maxTokens || 500) * 0.0006 / 1000)
 
     if (estimatedCost > maxEstimatedCost) {
       throw new Error(`Request too expensive (estimated $${estimatedCost.toFixed(3)}). Please ask a more specific question.`)
@@ -95,7 +95,7 @@ Guardrails:
     }
 
     const completion = await openai.chat.completions.create({
-      model: options.model || 'gpt-3.5-turbo',
+      model: options.model || 'gpt-4o-mini', // Using GPT-4o-mini for best cost/performance
       messages: openaiMessages,
       max_tokens: options.maxTokens || 500,
       temperature: options.temperature || 0.7,
@@ -106,10 +106,10 @@ Guardrails:
       throw new Error('No response from AI coach')
     }
 
-    // Calculate actual cost
+    // Calculate actual cost (GPT-4o-mini pricing: $0.00015/1K input, $0.0006/1K output)
     const usage = completion.usage
     const cost_usd = usage
-      ? (usage.prompt_tokens * 0.00015) + (usage.completion_tokens * 0.0006)
+      ? (usage.prompt_tokens * 0.00015 / 1000) + (usage.completion_tokens * 0.0006 / 1000)
       : 0
 
     // Log the interaction (redacted)
@@ -157,9 +157,11 @@ async function hashString(str: string): Promise<string> {
 
 // PII redaction for logging
 function redactPII(text: string): string {
-  // Simple PII redaction - replace numbers that look like account numbers, etc.
+  // Comprehensive PII redaction - replace sensitive patterns
   return text
-    .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[CARD_NUMBER]')
-    .replace(/\b\d{10,}\b/g, '[ACCOUNT_NUMBER]')
-    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]')
+    .replace(/\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/g, '[CARD_NUMBER]') // Credit cards
+    .replace(/\b\d{10,}\b/g, '[ACCOUNT_NUMBER]') // Account numbers (10+ digits)
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]') // Email addresses
+    .replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[SSN]') // Social Security Numbers
+    .replace(/\b\d{3}[-\s]?\d{3}[-\s]?\d{4}\b/g, '[PHONE]') // US Phone numbers
 }

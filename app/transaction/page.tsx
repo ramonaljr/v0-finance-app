@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-const FinancialCalendar = dynamic(() => import("@/components/financial-calendar").then(m => m.FinancialCalendar), { ssr: false })
+const FinancialCalendar = dynamic(() => import("@/components/financial-calendar-functional").then(m => m.FinancialCalendarFunctional), { ssr: false })
 const AddTransactionDialog = dynamic(() => import("@/components/add-transaction-dialog").then(m => m.AddTransactionDialog), { ssr: false })
 import {
   Search,
@@ -47,8 +47,8 @@ export default function TransactionPage() {
       amount: -127.45,
       date: "Today, 2:30 PM",
       icon: ShoppingBag,
-      bgColor: "bg-gray-100 dark:bg-muted",
-      iconColor: "text-gray-700 dark:text-muted-foreground",
+      bgGradient: "bg-gradient-to-br from-orange-500 to-amber-600",
+      glowColor: "shadow-orange-500/20",
     },
     {
       id: 2,
@@ -57,8 +57,8 @@ export default function TransactionPage() {
       amount: -8.75,
       date: "Today, 9:15 AM",
       icon: Coffee,
-      bgColor: "bg-gray-100 dark:bg-muted",
-      iconColor: "text-gray-700 dark:text-muted-foreground",
+      bgGradient: "bg-gradient-to-br from-amber-500 to-yellow-600",
+      glowColor: "shadow-amber-500/20",
     },
     {
       id: 3,
@@ -67,8 +67,8 @@ export default function TransactionPage() {
       amount: 5200.0,
       date: "Yesterday, 12:00 PM",
       icon: Briefcase,
-      bgColor: "bg-green-50 dark:bg-green-950",
-      iconColor: "text-green-700 dark:text-green-400",
+      bgGradient: "bg-gradient-to-br from-emerald-500 to-green-600",
+      glowColor: "shadow-emerald-500/20",
     },
     {
       id: 4,
@@ -77,8 +77,8 @@ export default function TransactionPage() {
       amount: -52.3,
       date: "Yesterday, 6:45 PM",
       icon: Car,
-      bgColor: "bg-gray-100 dark:bg-muted",
-      iconColor: "text-gray-700 dark:text-muted-foreground",
+      bgGradient: "bg-gradient-to-br from-blue-500 to-cyan-600",
+      glowColor: "shadow-blue-500/20",
     },
     {
       id: 5,
@@ -87,8 +87,8 @@ export default function TransactionPage() {
       amount: -145.0,
       date: "Oct 1, 2024",
       icon: Home,
-      bgColor: "bg-gray-100 dark:bg-muted",
-      iconColor: "text-gray-700 dark:text-muted-foreground",
+      bgGradient: "bg-gradient-to-br from-purple-500 to-indigo-600",
+      glowColor: "shadow-purple-500/20",
     },
     {
       id: 6,
@@ -97,8 +97,8 @@ export default function TransactionPage() {
       amount: -49.99,
       date: "Oct 1, 2024",
       icon: Heart,
-      bgColor: "bg-gray-100 dark:bg-muted",
-      iconColor: "text-gray-700 dark:text-muted-foreground",
+      bgGradient: "bg-gradient-to-br from-pink-500 to-rose-600",
+      glowColor: "shadow-pink-500/20",
     },
   ]
 
@@ -269,9 +269,9 @@ export default function TransactionPage() {
                   <Card key={transaction.id} className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div
-                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${isIncome ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-2 border-white' : 'bg-gray-50'}`}
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${transaction.bgGradient} shadow-lg ${transaction.glowColor} border-2 border-white`}
                       >
-                        <Icon className={`h-7 w-7 ${isIncome ? 'text-white' : 'text-gray-700'}`} strokeWidth={2.5} />
+                        <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-bold text-gray-900">{transaction.name}</p>

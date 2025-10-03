@@ -117,16 +117,15 @@ export async function runRecurringEngine(
         continue
       }
 
-      // Check if we already created a transaction for this occurrence
+      // Generate idempotency key: {template_id}:{YYYY-MM-DD}
+      const occurrenceDate = nextOccurrence.toISOString().split('T')[0]
+      const idempotencyKey = `${tx.id}:${occurrenceDate}`
+
+      // Check if we already created a transaction with this idempotency key
       const { data: existingTxs } = await supabase
         .from('transactions')
         .select('id')
-        .eq('user_id', tx.user_id)
-        .eq('payee', tx.payee || '')
-        .eq('amount_minor', tx.amount_minor)
-        .eq('direction', tx.direction)
-        .gte('occurred_at', nextOccurrence.toISOString())
-        .lte('occurred_at', new Date(nextOccurrence.getTime() + 86400000).toISOString()) // +24 hours
+        .eq('idempotency_key', idempotencyKey)
         .is('deleted_at', null)
         .limit(1)
 
@@ -139,7 +138,7 @@ export async function runRecurringEngine(
         continue
       }
 
-      // Create new transaction instance
+      // Create new transaction instance with idempotency key
       const newTx = {
         user_id: tx.user_id,
         account_id: tx.account_id,
@@ -155,6 +154,8 @@ export async function runRecurringEngine(
         is_recurring: false, // Instances are not recurring
         recur_rule: null,
         is_reconciled: false,
+        recurring_template_id: tx.id, // Link to template
+        idempotency_key: idempotencyKey, // Prevent duplicates
       }
 
       const { error: insertError } = await supabase

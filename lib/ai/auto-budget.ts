@@ -138,7 +138,7 @@ Return budget proposals as a JSON array with category_id, category_name, limit_m
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o-mini', // Using GPT-4o-mini for best cost/performance
       messages: [
         { role: 'system', content: systemPrompt }
       ],

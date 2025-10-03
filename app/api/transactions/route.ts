@@ -66,13 +66,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to insert transactions" }, { status: 500 })
     }
 
-    // Trigger cache refresh for the user
+    // Enqueue cache refresh for the user (with retry mechanism)
     try {
-      await supabase.functions.invoke('refresh-caches', {
-        body: { user_ids: [user.id] }
-      })
+      const { data: queueResult, error: queueError } = await supabase
+        .rpc('enqueue_cache_refresh', { p_user_id: user.id })
+
+      if (queueError) {
+        console.error('Failed to enqueue cache refresh:', queueError)
+        // Fallback: try direct invocation
+        await supabase.functions.invoke('refresh-caches', {
+          body: { user_ids: [user.id] }
+        }).catch(err => console.error('Direct cache refresh also failed:', err))
+      }
     } catch (refreshError) {
-      console.error('Cache refresh failed:', refreshError)
+      console.error('Cache refresh enqueue failed:', refreshError)
       // Don't fail the transaction insert if cache refresh fails
     }
 

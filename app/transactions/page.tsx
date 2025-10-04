@@ -1,470 +1,572 @@
 "use client"
-
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import dynamic from "next/dynamic"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowUpCircle, ArrowDownCircle, Plus, X, Pencil, Trash2, AlertCircle } from "lucide-react"
-import { CalculatorInput } from "@/components/ui/calculator-input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+const FinancialCalendar = dynamic(() => import("@/components/financial-calendar-functional").then(m => m.FinancialCalendarFunctional), { ssr: false })
+const AddTransactionDialog = dynamic(() => import("@/components/add-transaction-dialog").then(m => m.AddTransactionDialog), { ssr: false })
+import {
+  Search,
+  Filter,
+  Download,
+  ArrowUpRight,
+  ArrowDownRight,
+  CalendarIcon,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  ShoppingBag,
+  Coffee,
+  Car,
+  Home,
+  Heart,
+  Briefcase,
+  Sparkles,
+  BarChart3,
+  DollarSign,
+  Receipt,
+} from "lucide-react"
+import { useState } from "react"
+const TransactionSpendingPieChart = dynamic(
+  () => import("@/components/transaction-spending-pie-chart").then(m => m.TransactionSpendingPieChart),
+  { ssr: false }
+)
+import { TransactionFilters, FilterState } from "@/components/transaction-filters"
 
-interface Transaction {
-  id: string
-  amount_minor: number
-  currency_code: string
-  direction: 'in' | 'out'
-  occurred_at: string
-  payee: string | null
-  notes: string | null
-  category?: { id: string; name: string; icon?: string; color?: string }
-  account?: { id: string; name: string; type: string }
-  category_id?: string | null
-  account_id?: string | null
-}
+export default function TransactionPage() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [date, setDate] = useState<Date | undefined>(new Date())
+  const [filters, setFilters] = useState<FilterState>({ categoryIds: [], direction: 'all' })
 
-interface Category {
-  id: string
-  name: string
-  icon?: string
-  color?: string
-}
+  const handleExport = async () => {
+    try {
+      const currentMonth = new Date()
+      const startDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString()
+      const endDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString()
 
-interface Account {
-  id: string
-  name: string
-  type: string
-}
+      const response = await fetch(`/api/export/transactions?format=csv&start_date=${startDate}&end_date=${endDate}`)
+      if (!response.ok) throw new Error('Export failed')
 
-export default function TransactionsPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error exporting transactions:', error)
+      alert('Failed to export transactions. Please try again.')
+    }
+  }
 
-  // Form state
-  const [formData, setFormData] = useState({
-    amount: '',
-    direction: 'out' as 'in' | 'out',
-    payee: '',
-    notes: '',
-    category_id: '',
-    account_id: '',
-    occurred_at: new Date().toISOString().split('T')[0]
+  const transactions = [
+    {
+      id: 1,
+      name: "Whole Foods Market",
+      category: "Groceries",
+      amount: -127.45,
+      date: "Today, 2:30 PM",
+      icon: ShoppingBag,
+      bgGradient: "bg-gradient-to-br from-orange-500 to-amber-600",
+      glowColor: "shadow-orange-500/20",
+    },
+    {
+      id: 2,
+      name: "Starbucks",
+      category: "Coffee & Dining",
+      amount: -8.75,
+      date: "Today, 9:15 AM",
+      icon: Coffee,
+      bgGradient: "bg-gradient-to-br from-amber-500 to-yellow-600",
+      glowColor: "shadow-amber-500/20",
+    },
+    {
+      id: 3,
+      name: "Monthly Salary",
+      category: "Income",
+      amount: 5200.0,
+      date: "Yesterday, 12:00 PM",
+      icon: Briefcase,
+      bgGradient: "bg-gradient-to-br from-emerald-500 to-green-600",
+      glowColor: "shadow-emerald-500/20",
+    },
+    {
+      id: 4,
+      name: "Shell Gas Station",
+      category: "Transportation",
+      amount: -52.3,
+      date: "Yesterday, 6:45 PM",
+      icon: Car,
+      bgGradient: "bg-gradient-to-br from-blue-500 to-cyan-600",
+      glowColor: "shadow-blue-500/20",
+    },
+    {
+      id: 5,
+      name: "Electric Bill",
+      category: "Utilities",
+      amount: -145.0,
+      date: "Oct 1, 2024",
+      icon: Home,
+      bgGradient: "bg-gradient-to-br from-purple-500 to-indigo-600",
+      glowColor: "shadow-purple-500/20",
+    },
+    {
+      id: 6,
+      name: "Gym Membership",
+      category: "Health & Fitness",
+      amount: -49.99,
+      date: "Oct 1, 2024",
+      icon: Heart,
+      bgGradient: "bg-gradient-to-br from-pink-500 to-rose-600",
+      glowColor: "shadow-pink-500/20",
+    },
+  ]
+
+  const categoryStats = [
+    {
+      name: "Groceries",
+      amount: 487.32,
+      percentage: 28,
+      count: 12,
+      chartColor: "#10b981",
+      barColor: "#10b981",
+    },
+    {
+      name: "Dining",
+      amount: 342.15,
+      percentage: 20,
+      count: 18,
+      chartColor: "#f97316",
+      barColor: "#f97316",
+    },
+    {
+      name: "Transport",
+      amount: 215.8,
+      percentage: 13,
+      count: 8,
+      chartColor: "#3b82f6",
+      barColor: "#3b82f6",
+    },
+    {
+      name: "Shopping",
+      amount: 425.0,
+      percentage: 25,
+      count: 15,
+      chartColor: "#ec4899",
+      barColor: "#ec4899",
+    },
+    {
+      name: "Utilities",
+      amount: 145.0,
+      percentage: 8,
+      count: 3,
+      chartColor: "#f59e0b",
+      barColor: "#f59e0b",
+    },
+    {
+      name: "Other",
+      amount: 108.22,
+      percentage: 6,
+      count: 5,
+      chartColor: "#6b7280",
+      barColor: "#6b7280",
+    },
+  ]
+
+  const pieChartData = categoryStats.map((cat) => ({
+    name: cat.name,
+    value: cat.amount,
+    fill: cat.chartColor,
+    percentage: cat.percentage,
+  }))
+
+  const totalSpending = categoryStats.reduce((sum, cat) => sum + cat.amount, 0)
+
+  const filteredTransactions = transactions.filter((t) => {
+    // Search query
+    if (searchQuery && !t.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+
+    // Direction filter
+    if (filters.direction !== 'all') {
+      const isExpense = t.amount < 0
+      if (filters.direction === 'out' && !isExpense) return false
+      if (filters.direction === 'in' && isExpense) return false
+    }
+
+    // Category filter
+    if (filters.categoryIds.length > 0 && !filters.categoryIds.includes(t.category)) return false
+
+    // Amount filter
+    const absAmount = Math.abs(t.amount)
+    if (filters.minAmount && absAmount < filters.minAmount) return false
+    if (filters.maxAmount && absAmount > filters.maxAmount) return false
+
+    return true
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    setUser(user)
-
-    try {
-      // Load transactions
-      const txResponse = await fetch('/api/transactions?limit=50')
-      if (txResponse.ok) {
-        const txData = await txResponse.json()
-        setTransactions(txData.transactions || [])
-      }
-
-      // Load categories
-      const catResponse = await fetch('/api/categories')
-      if (catResponse.ok) {
-        const catData = await catResponse.json()
-        setCategories(catData.categories || [])
-      }
-
-      // Load accounts
-      const accResponse = await fetch('/api/accounts')
-      if (accResponse.ok) {
-        const accData = await accResponse.json()
-        setAccounts(accData.accounts || [])
-      }
-    } catch (error) {
-      console.error('Error loading data:', error)
-    }
-
-    setLoading(false)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    try {
-      const amount = parseFloat(formData.amount)
-      if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid amount')
-        return
-      }
-
-      if (editingId) {
-        // Update existing transaction
-        const updateData = {
-          amount_minor: Math.round(amount * 100),
-          direction: formData.direction,
-          occurred_at: new Date(formData.occurred_at).toISOString(),
-          payee: formData.payee || null,
-          notes: formData.notes || null,
-          category_id: formData.category_id || null,
-          account_id: formData.account_id || null,
-        }
-
-        const response = await fetch(`/api/transactions/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updateData)
-        })
-
-        if (response.ok) {
-          resetForm()
-          await loadData()
-          await refreshCache()
-        } else {
-          const error = await response.json()
-          alert(`Error: ${error.error || 'Failed to update transaction'}`)
-        }
-      } else {
-        // Create new transaction
-        const transaction = {
-          amount_minor: Math.round(amount * 100),
-          currency_code: 'USD',
-          direction: formData.direction,
-          occurred_at: new Date(formData.occurred_at).toISOString(),
-          payee: formData.payee || null,
-          notes: formData.notes || null,
-          category_id: formData.category_id || null,
-          account_id: formData.account_id || null,
-        }
-
-        const response = await fetch('/api/transactions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactions: [transaction] })
-        })
-
-        if (response.ok) {
-          resetForm()
-          await loadData()
-          await refreshCache()
-        } else {
-          const error = await response.json()
-          alert(`Error: ${error.error || 'Failed to create transaction'}`)
-        }
-      }
-    } catch (error) {
-      console.error('Error saving transaction:', error)
-      alert('Failed to save transaction')
-    }
-  }
-
-  const startEdit = (transaction: Transaction) => {
-    setEditingId(transaction.id)
-    setFormData({
-      amount: (transaction.amount_minor / 100).toString(),
-      direction: transaction.direction,
-      payee: transaction.payee || '',
-      notes: transaction.notes || '',
-      category_id: transaction.category_id || '',
-      account_id: transaction.account_id || '',
-      occurred_at: new Date(transaction.occurred_at).toISOString().split('T')[0]
-    })
-    setShowAddForm(true)
-  }
-
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`/api/transactions/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        setDeleteConfirmId(null)
-        await loadData()
-        await refreshCache()
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.error || 'Failed to delete transaction'}`)
-      }
-    } catch (error) {
-      console.error('Error deleting transaction:', error)
-      alert('Failed to delete transaction')
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      amount: '',
-      direction: 'out',
-      payee: '',
-      notes: '',
-      category_id: '',
-      account_id: '',
-      occurred_at: new Date().toISOString().split('T')[0]
-    })
-    setShowAddForm(false)
-    setEditingId(null)
-  }
-
-  const refreshCache = async () => {
-    try {
-      await fetch('/api/cache/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    } catch (error) {
-      console.error('Cache refresh error:', error)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading transactions...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600"
-          >
-            {showAddForm ? <X className="h-5 w-5 mr-2" /> : <Plus className="h-5 w-5 mr-2" />}
-            {showAddForm ? 'Cancel' : 'Add Transaction'}
-          </Button>
-        </div>
-
-        {/* Add/Edit Transaction Form */}
-        {showAddForm && (
-          <Card className="p-6 mb-6">
-            <h2 className="text-lg font-bold mb-4">
-              {editingId ? 'Edit Transaction' : 'New Transaction'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Amount</Label>
-                  <CalculatorInput
-                    value={formData.amount}
-                    onChange={(value) => setFormData({ ...formData, amount: value })}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <Label>Type</Label>
-                  <Select value={formData.direction} onValueChange={(value: 'in' | 'out') => setFormData({ ...formData, direction: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="out">Expense</SelectItem>
-                      <SelectItem value="in">Income</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Payee / Description</Label>
-                <Input
-                  placeholder="e.g., Starbucks"
-                  value={formData.payee}
-                  onChange={(e) => setFormData({ ...formData, payee: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Category</Label>
-                  <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.icon} {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Account</Label>
-                  <Select value={formData.account_id} onValueChange={(value) => setFormData({ ...formData, account_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map((acc) => (
-                        <SelectItem key={acc.id} value={acc.id}>
-                          {acc.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Date</Label>
-                <Input
-                  type="date"
-                  value={formData.occurred_at}
-                  onChange={(e) => setFormData({ ...formData, occurred_at: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label>Notes</Label>
-                <Input
-                  placeholder="Optional notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <Button type="submit" className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600">
-                  {editingId ? 'Update Transaction' : 'Add Transaction'}
-                </Button>
-                {editingId && (
-                  <Button type="button" variant="outline" onClick={resetForm}>
-                    Cancel
-                  </Button>
-                )}
-              </div>
-            </form>
-          </Card>
-        )}
-
-        {/* Delete Confirmation Dialog */}
-        {deleteConfirmId && (
-          <Card className="p-6 mb-6 border-2 border-red-200 bg-red-50">
-            <div className="flex items-start gap-4">
-              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Transaction?</h3>
-                <p className="text-sm text-gray-700 mb-4">
-                  This action cannot be undone. The transaction will be permanently deleted.
-                </p>
-                <div className="flex gap-3">
-                  <Button
-                    variant="destructive"
-                    onClick={() => handleDelete(deleteConfirmId)}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                  <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gray-50/30 pb-20">
+      {/* Header */}
+      <header className="border-b border-gray-200 bg-white px-6 pb-6 pt-8">
+        <div className="mx-auto max-w-lg">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+              <p className="text-sm font-medium text-gray-600">October 2024</p>
             </div>
-          </Card>
-        )}
+            <Button size="sm" variant="outline" className="gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0 hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all rounded-xl h-9 font-semibold" onClick={handleExport}>
+              <Download className="h-4 w-4" strokeWidth={2.5} />
+              Export
+            </Button>
+          </div>
 
-        {/* Transactions List */}
-        <div className="space-y-3">
-          {transactions.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-600 mb-4">No transactions yet</p>
-              <Button onClick={() => setShowAddForm(true)}>Add Your First Transaction</Button>
+          {/* Summary Cards */}
+          <div className="mb-6 grid grid-cols-3 gap-3">
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/20 border-2 border-white">
+                <Receipt className="h-6 w-6 text-white" strokeWidth={2.5} />
+              </div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</p>
+              <p className="text-xl font-bold text-gray-900">142</p>
+              <p className="text-xs font-medium text-gray-600">transactions</p>
             </Card>
-          ) : (
-            transactions.map((tx) => (
-              <Card key={tx.id} className="p-4 hover:shadow-lg transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    {tx.direction === 'in' ? (
-                      <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                        <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
-                      </div>
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                        <ArrowDownCircle className="h-5 w-5 text-red-600" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{tx.payee || 'Unknown'}</p>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
-                        {tx.category && (
-                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">
-                            {tx.category.icon} {tx.category.name}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-500">
-                          {new Date(tx.occurred_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className={`font-bold text-lg ${tx.direction === 'in' ? 'text-emerald-600' : 'text-red-600'}`}>
-                        {tx.direction === 'in' ? '+' : '-'}${(tx.amount_minor / 100).toFixed(2)}
-                      </p>
-                      {tx.account && (
-                        <p className="text-xs text-gray-500">{tx.account.name}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => startEdit(tx)}
-                        className="h-8 w-8"
+
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/20 border-2 border-white">
+                <ArrowDownRight className="h-6 w-6 text-white" strokeWidth={2.5} />
+              </div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Expenses</p>
+              <p className="text-xl font-bold text-gray-900">$1,724</p>
+              <p className="text-xs font-semibold text-red-600">+12% vs last</p>
+            </Card>
+
+            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-2 border-white">
+                <ArrowUpRight className="h-6 w-6 text-white" strokeWidth={2.5} />
+              </div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Income</p>
+              <p className="text-xl font-bold text-gray-900">$5,200</p>
+              <p className="text-xs font-medium text-gray-600">Same as last</p>
+            </Card>
+          </div>
+
+          {/* Search and Filter */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" strokeWidth={2.5} />
+              <Input
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 rounded-xl h-9 border-gray-300 shadow-sm"
+              />
+            </div>
+            <TransactionFilters
+              categories={categoryStats.map(c => ({
+                id: c.name,
+                name: c.name,
+                icon: undefined,
+                color: c.chartColor
+              }))}
+              onApplyFilters={setFilters}
+              activeFilters={filters}
+            />
+            <Button variant="outline" size="icon" className="shrink-0 bg-white rounded-xl shadow-sm hover:shadow-md transition-all">
+              <CalendarIcon className="h-4 w-4" strokeWidth={2.5} />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-lg px-6 py-6">
+        <Tabs defaultValue="reports" className="w-full">
+          <TabsList className="mb-6 w-full justify-start gap-2 bg-transparent p-0">
+            <TabsTrigger
+              value="reports"
+              className="rounded-xl border border-gray-300 bg-white shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:border-0 data-[state=active]:shadow-lg font-semibold transition-all"
+            >
+              Reports
+            </TabsTrigger>
+            <TabsTrigger
+              value="stats"
+              className="gap-1.5 rounded-xl border border-gray-300 bg-white shadow-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:border-0 data-[state=active]:shadow-lg font-semibold transition-all"
+            >
+              <BarChart3 className="h-4 w-4" strokeWidth={2.5} />
+              Stats
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="reports" className="space-y-6">
+            <div>
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Calendar & Transactions</h3>
+              <FinancialCalendar />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-900">Dec 14, Mon</h3>
+                <p className="text-sm font-bold text-red-600">OUT $60.75</p>
+              </div>
+              {filteredTransactions.slice(0, 4).map((transaction) => {
+                const Icon = transaction.icon
+                const isIncome = transaction.amount > 0
+
+                return (
+                  <Card key={transaction.id} className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${transaction.bgGradient} shadow-lg ${transaction.glowColor} border-2 border-white`}
                       >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteConfirmId(tx.id)}
-                        className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-bold text-gray-900">{transaction.name}</p>
+                        <p className="text-xs font-semibold text-gray-600">{transaction.category}</p>
+                        <p className="text-xs font-medium text-gray-600">{transaction.date}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p
+                            className={`text-xl font-bold ${isIncome ? "text-green-600" : "text-gray-900"}`}
+                          >
+                            {isIncome ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
+                      </div>
                     </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="stats" className="space-y-6">
+            <div>
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Spending Overview</h3>
+              <Card className="bg-white p-6 rounded-2xl shadow-md">
+                <div className="mb-6 text-center">
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Total Spending</p>
+                  <p className="text-4xl font-bold text-gray-900">${totalSpending.toFixed(2)}</p>
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-red-600" strokeWidth={2.5} />
+                    <span className="text-sm font-semibold text-red-600">+12% from last month</span>
                   </div>
+                </div>
+
+                <TransactionSpendingPieChart data={pieChartData} />
+
+                <div className="space-y-3">
+                  {pieChartData.map((item) => (
+                    <div key={item.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-3 w-3 rounded-full shadow-lg" style={{ backgroundColor: item.fill }} />
+                        <span className="text-sm font-bold text-gray-900">{item.name}</span>
+                        <span className="text-sm font-semibold text-gray-600">{item.percentage}%</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-900">${item.value.toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
               </Card>
-            ))
-          )}
-        </div>
-      </div>
+            </div>
+
+            {/* Monthly Overview */}
+            <div>
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Monthly Overview</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/20 border-2 border-white">
+                      <DollarSign className="h-6 w-6 text-white" strokeWidth={2.5} />
+                    </div>
+                    <Badge variant="outline" className="font-semibold">Avg</Badge>
+                  </div>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Daily Spending</p>
+                  <p className="text-2xl font-bold text-gray-900">$57.46</p>
+                  <div className="mt-2 flex items-center gap-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-red-600" strokeWidth={2.5} />
+                    <span className="text-xs font-semibold text-red-600">+8% from average</span>
+                  </div>
+                </Card>
+
+                <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/20 border-2 border-white">
+                      <Receipt className="h-6 w-6 text-white" strokeWidth={2.5} />
+                    </div>
+                    <Badge variant="outline" className="font-semibold">Avg</Badge>
+                  </div>
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Per Transaction</p>
+                  <p className="text-2xl font-bold text-gray-900">$12.14</p>
+                  <div className="mt-2 flex items-center gap-1">
+                    <TrendingDown className="h-3.5 w-3.5 text-green-600" strokeWidth={2.5} />
+                    <span className="text-xs font-semibold text-green-600">-3% from average</span>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Spending by Category */}
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Category Details</h3>
+              </div>
+
+              <Card className="bg-white p-5 rounded-2xl shadow-md">
+                <div className="space-y-4">
+                  {categoryStats.map((category) => (
+                    <div key={category.name}>
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 rounded-full shadow-lg" style={{ backgroundColor: category.chartColor }} />
+                          <span className="text-sm font-bold text-gray-900">{category.name}</span>
+                          <span className="text-sm font-semibold text-gray-600">({category.count})</span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">${category.amount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-50">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${category.percentage}%`,
+                              backgroundColor: category.barColor,
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-600">{category.percentage}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Weekly Spending Trend */}
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Weekly Spending Trend</h3>
+                <Button size="sm" variant="ghost" className="h-9 gap-1.5 hover:bg-gray-50 rounded-xl font-semibold">
+                  <BarChart3 className="h-4 w-4" strokeWidth={2.5} />
+                  Details
+                </Button>
+              </div>
+
+              <Card className="bg-white p-5 rounded-2xl shadow-md">
+                <div className="grid grid-cols-7 gap-2">
+                  {[
+                    { day: "Mon", amount: 45, height: 40, color: "bg-gradient-to-t from-blue-500 to-cyan-400 shadow-lg" },
+                    { day: "Tue", amount: 78, height: 70, color: "bg-gradient-to-t from-emerald-500 to-teal-400 shadow-lg" },
+                    { day: "Wed", amount: 52, height: 50, color: "bg-gradient-to-t from-purple-500 to-indigo-400 shadow-lg" },
+                    { day: "Thu", amount: 95, height: 85, color: "bg-gradient-to-t from-pink-500 to-rose-400 shadow-lg" },
+                    { day: "Fri", amount: 120, height: 100, color: "bg-gradient-to-t from-orange-500 to-amber-400 shadow-lg" },
+                    { day: "Sat", amount: 88, height: 75, color: "bg-gradient-to-t from-indigo-500 to-purple-400 shadow-lg" },
+                    { day: "Sun", amount: 62, height: 55, color: "bg-gradient-to-t from-cyan-500 to-blue-400 shadow-lg" },
+                  ].map((day) => (
+                    <div key={day.day} className="flex flex-col items-center">
+                      <div className="mb-2 flex h-24 w-full items-end">
+                        <div className={`w-full rounded-t-lg ${day.color}`} style={{ height: `${day.height}%` }} />
+                      </div>
+                      <p className="text-xs font-bold text-gray-900">{day.day}</p>
+                      <p className="text-xs font-semibold text-gray-600">${day.amount}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+
+            {/* Top Merchants */}
+            <div>
+              <h3 className="mb-4 text-sm font-bold text-gray-900 uppercase tracking-wider">Top Merchants</h3>
+              <Card className="divide-y divide-gray-100 bg-white rounded-2xl shadow-md">
+                {[
+                  {
+                    name: "Whole Foods",
+                    amount: 487.32,
+                    transactions: 12,
+                    icon: ShoppingBag,
+                    bgGradient: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+                    glowColor: "shadow-emerald-500/20",
+                  },
+                  {
+                    name: "Shell Gas",
+                    amount: 215.8,
+                    transactions: 8,
+                    icon: Car,
+                    bgGradient: "bg-gradient-to-br from-blue-500 to-blue-600",
+                    glowColor: "shadow-blue-500/20",
+                  },
+                  {
+                    name: "Amazon",
+                    amount: 425.0,
+                    transactions: 15,
+                    icon: ShoppingBag,
+                    bgGradient: "bg-gradient-to-br from-pink-500 to-pink-600",
+                    glowColor: "shadow-pink-500/20",
+                  },
+                  {
+                    name: "Starbucks",
+                    amount: 156.25,
+                    transactions: 18,
+                    icon: Coffee,
+                    bgGradient: "bg-gradient-to-br from-orange-500 to-orange-600",
+                    glowColor: "shadow-orange-500/20",
+                  },
+                ].map((merchant, index) => {
+                  const Icon = merchant.icon
+                  return (
+                    <div key={merchant.name} className="flex items-center gap-4 p-5 hover:bg-gray-50 transition-all cursor-pointer">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-bold text-gray-600">
+                        #{index + 1}
+                      </div>
+                      <div
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${merchant.bgGradient} shadow-lg ${merchant.glowColor} border-2 border-white`}
+                      >
+                        <Icon className="h-6 w-6 text-white" strokeWidth={2.5} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-900">{merchant.name}</p>
+                        <p className="text-xs font-semibold text-gray-600">{merchant.transactions} transactions</p>
+                      </div>
+                      <p className="text-xl font-bold text-gray-900">${merchant.amount.toFixed(2)}</p>
+                    </div>
+                  )
+                })}
+              </Card>
+            </div>
+
+            {/* AI Insights */}
+            <Card className="border-0 bg-gradient-to-br from-purple-50 to-indigo-50 p-5 rounded-2xl shadow-md">
+              <div className="flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/20 border-2 border-white">
+                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
+                </div>
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <p className="text-sm font-bold text-gray-900">Spending Pattern Detected</p>
+                    <Badge className="border-0 bg-purple-100 text-purple-700 text-xs font-semibold">AI</Badge>
+                  </div>
+                  <p className="text-sm leading-relaxed font-medium text-gray-700">
+                    Your weekend spending is 45% higher than weekdays. Setting a weekend budget could save you
+                    $180/month.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
 
       <BottomNav />
+      <AddTransactionDialog />
     </div>
   )
 }

@@ -1,13 +1,15 @@
+"use client"
+
 import { BottomNav } from "@/components/bottom-nav"
-import { FABButton } from "@/components/fab-button"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, Download, Calendar } from "lucide-react"
+import { TrendingUp, TrendingDown, Download, Calendar, Lightbulb, AlertCircle, Target, Sparkles } from "lucide-react"
 import { useFormattedKPICache } from "@/lib/hooks/use-api"
 import { StatsLoadingSkeleton, ChartLoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import dynamic from "next/dynamic"
 
-export const dynamic = 'force-dynamic'
+const CashflowForecast = dynamic(() => import("@/components/cashflow-forecast").then(m => ({ default: m.CashflowForecast })), { ssr: false })
 
 const InsightsPage = () => {
   const { data: kpiData, isLoading, error } = useFormattedKPICache()
@@ -21,7 +23,6 @@ const InsightsPage = () => {
           <ChartLoadingSkeleton />
         </div>
         <BottomNav />
-        <FABButton />
       </div>
     )
   }
@@ -37,7 +38,6 @@ const InsightsPage = () => {
           </Alert>
         </div>
         <BottomNav />
-        <FABButton />
       </div>
     )
   }
@@ -97,6 +97,88 @@ const InsightsPage = () => {
               <span>This month</span>
             </div>
           </Card>
+        </div>
+
+        {/* AI Insights Section */}
+        <Card className="mb-6 p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">AI Insights</h2>
+          </div>
+
+          <div className="space-y-3">
+            {/* Smart Savings Tip */}
+            <div className="flex items-start gap-3 p-4 bg-white/80 rounded-lg border border-purple-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <Lightbulb className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm text-foreground mb-1">Smart Savings Opportunity</h3>
+                <p className="text-sm text-muted-foreground">
+                  You could save <span className="font-bold text-success">$120/month</span> by reducing dining out expenses by 20%. That's $1,440 annually towards your savings goals!
+                </p>
+              </div>
+            </div>
+
+            {/* Budget Alert */}
+            <div className="flex items-start gap-3 p-4 bg-white/80 rounded-lg border border-purple-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                <AlertCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm text-foreground mb-1">Budget Watch</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your <span className="font-bold text-destructive">Shopping</span> category is 30% higher than usual. Consider reviewing your recent purchases.
+                </p>
+              </div>
+            </div>
+
+            {/* Goal Achievement */}
+            <div className="flex items-start gap-3 p-4 bg-white/80 rounded-lg border border-purple-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                <Target className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm text-foreground mb-1">Goal Progress</h3>
+                <p className="text-sm text-muted-foreground">
+                  You're <span className="font-bold text-success">2 months ahead</span> on your Emergency Fund goal! Keep up the great work.
+                </p>
+              </div>
+            </div>
+
+            {/* Spending Pattern */}
+            <div className="flex items-start gap-3 p-4 bg-white/80 rounded-lg border border-purple-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm text-foreground mb-1">Spending Pattern Detected</h3>
+                <p className="text-sm text-muted-foreground">
+                  You tend to spend more on <span className="font-bold">weekends</span>. Try meal prepping to reduce weekend dining costs by 40%.
+                </p>
+              </div>
+            </div>
+
+            {/* Investment Suggestion */}
+            <div className="flex items-start gap-3 p-4 bg-white/80 rounded-lg border border-purple-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-100">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-sm text-foreground mb-1">Smart Money Move</h3>
+                <p className="text-sm text-muted-foreground">
+                  You have $5,000 in low-interest savings. Consider moving $3,000 to a high-yield account (4.5% APY) for an extra $180/year.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* 30-Day Cashflow Forecast */}
+        <div className="mb-6">
+          <CashflowForecast />
         </div>
 
         {/* Income vs Expenses Chart */}
@@ -335,7 +417,6 @@ const InsightsPage = () => {
       </main>
 
       <BottomNav />
-      <FABButton />
     </div>
   )
 }

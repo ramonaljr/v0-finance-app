@@ -1,14 +1,16 @@
-import { withSentryConfig } from '@sentry/nextjs';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    instrumentationHook: true,
+    // Only enable instrumentation in production when Sentry is configured
+    instrumentationHook: process.env.NODE_ENV === 'production' && !!process.env.SENTRY_DSN,
   },
   eslint: {
+    // Disable ESLint during builds due to ESLint 9 compatibility issues
+    // Run pnpm lint separately to check for errors
     ignoreDuringBuilds: true,
   },
   typescript: {
+    // Temporarily disable to test build speed - will fix errors after
     ignoreBuildErrors: true,
   },
   images: {
@@ -56,16 +58,4 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  // Sentry Webpack Plugin options
-  silent: true, // Suppresses all logs
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-}, {
-  // Sentry SDK options
-  widenClientFileUpload: true,
-  transpileClientSDK: true,
-  tunnelRoute: "/monitoring",
-  hideSourceMaps: true,
-  disableLogger: true,
-})
+export default nextConfig

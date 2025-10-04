@@ -10,6 +10,7 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
         'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
         'modern-soft:rounded-card modern-soft:shadow-sm modern-soft:border-border/50',
         'modern-soft:card-hover modern-soft:transition-smooth',
+        'high-contrast:border-2 high-contrast:border-border high-contrast:shadow-none',
         className,
       )}
       {...props}

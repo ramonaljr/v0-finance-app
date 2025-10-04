@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AccountsLoadingSkeleton } from "@/components/loading-states"
 import {
   Building2,
   CreditCard,
@@ -201,11 +202,7 @@ export default function AccountPageNew() {
   const getInvestmentAccounts = () => accounts.filter(a => a.type === 'investment')
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-      </div>
-    )
+    return <AccountsLoadingSkeleton />
   }
 
   return (

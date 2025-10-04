@@ -27,6 +27,7 @@ import {
 import { useState } from "react"
 const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
 const BudgetPieChart = dynamic(() => import("@/components/budget-pie-chart").then(m => m.BudgetPieChart), { ssr: false })
+const AIInsightCard = dynamic(() => import("@/components/ai-insight-card").then(m => m.AIInsightCard), { ssr: false })
 import { getCategoryColor } from "@/lib/category-colors"
 
 export default function BudgetPage() {
@@ -261,32 +262,12 @@ export default function BudgetPage() {
 
           <TabsContent value="plan" className="space-y-6">
             {/* AI Insights */}
-            <Card className="border-blue-200 bg-white p-4 dark:border-blue-800 shadow-md rounded-2xl">
-              <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20 border-2 border-white">
-                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-900">Budget Insight</p>
-                    <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
-                      AI
-                    </Badge>
-                  </div>
-                  <p className="mb-2 text-sm leading-relaxed text-gray-600">
-                    You're over budget on Dining Out by $42. Consider meal prepping to save $120/month.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 gap-1 border-blue-300 bg-white dark:border-blue-700 rounded-xl"
-                  >
-                    <Target className="h-3 w-3" strokeWidth={2.5} />
-                    View Tips
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <AIInsightCard
+              context={{
+                type: 'budget',
+                budgets: budgetCategories
+              }}
+            />
 
             {/* Budget Categories */}
             <div className="space-y-4">
@@ -394,43 +375,11 @@ export default function BudgetPage() {
             </Card>
 
             {/* AI Insights for Recurring */}
-            <Card className="border-purple-200 bg-white p-4 dark:border-purple-800 shadow-md rounded-2xl">
-              <div className="flex items-start gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/20 border-2 border-white">
-                  <Sparkles className="h-6 w-6 text-white" strokeWidth={2.5} />
-                </div>
-                <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-900">Smart Budget Analysis</p>
-                    <Badge className="border-0 bg-blue-100 text-blue-700 text-xs dark:bg-blue-900 dark:text-blue-300">
-                      AI
-                    </Badge>
-                  </div>
-                  <p className="mb-3 text-sm leading-relaxed text-gray-600">
-                    Your recurring expenses account for {recurringPercentage.toFixed(1)}% (${totalRecurring.toFixed(2)})
-                    of your total monthly obligations. After fixed expenses, you have ${discretionaryBudget.toFixed(2)}{" "}
-                    for discretionary spending.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600 dark:text-green-400" strokeWidth={2.5} />
-                      <span className="text-gray-600">
-                        {recurringExpenses.filter((e) => e.autopay).length} bills on autopay - reducing late payment
-                        risk
-                      </span>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" strokeWidth={2.5} />
-                      <span className="text-gray-600">
-                        Credit card payment of $
-                        {recurringExpenses.find((e) => e.id === "credit-card")?.amount.toFixed(2)} due on the 22nd - not
-                        on autopay
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
+            <AIInsightCard
+              context={{
+                type: 'recurring'
+              }}
+            />
 
             {/* Budget Breakdown */}
             <div className="grid grid-cols-2 gap-3">

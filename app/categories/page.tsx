@@ -1,8 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { safeFetch } from "@/lib/utils/fetch"
+import { logger } from "@/lib/utils/logger"
+import { PageErrorBoundary } from "@/components/ui/page-error-boundary"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,7 +26,7 @@ const COLOR_OPTIONS = [
   '#F44336', '#00BCD4', '#8BC34A', '#FFC107', '#673AB7'
 ]
 
-export default function CategoriesPage() {
+function CategoriesPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -37,11 +40,7 @@ export default function CategoriesPage() {
     color: '#2196F3',
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -53,17 +52,20 @@ export default function CategoriesPage() {
     setUser(user)
 
     try {
-      const response = await fetch('/api/categories')
-      if (response.ok) {
-        const data = await response.json()
+      const data = await safeFetch<{ categories: Category[] }>('/api/categories')
+      if (data) {
         setCategories(data.categories || [])
       }
     } catch (error) {
-      console.error('Error loading categories:', error)
+      logger.error('Error loading categories:', error)
     }
 
     setLoading(false)
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,7 +86,7 @@ export default function CategoriesPage() {
         alert(`Error: ${error.error || 'Failed to create category'}`)
       }
     } catch (error) {
-      console.error('Error creating category:', error)
+      logger.error('Error creating category:', error)
       alert('Failed to create category')
     }
   }
@@ -243,7 +245,7 @@ export default function CategoriesPage() {
                       })
                       await loadData()
                     } catch (error) {
-                      console.error('Error adding preset:', error)
+                      logger.error('Error adding preset:', error)
                     }
                   }}
                   className="justify-start"
@@ -259,5 +261,14 @@ export default function CategoriesPage() {
 
       <BottomNav />
     </div>
+  )
+}
+
+
+export default function CategoriesPageWithErrorBoundary() {
+  return (
+    <PageErrorBoundary>
+      <CategoriesPage />
+    </PageErrorBoundary>
   )
 }

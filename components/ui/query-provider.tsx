@@ -23,14 +23,16 @@ export function QueryProvider({ children, dehydratedState }: Props) {
             staleTime: 5 * 60 * 1000,
             // Keep data in cache for 10 minutes
             gcTime: 10 * 60 * 1000,
-            // Retry failed requests up to 3 times
-            retry: 3,
+            // Reduce retries for faster failure feedback
+            retry: 1,
+            // Retry delay
+            retryDelay: 1000,
             // Don't refetch on window focus for better performance
             refetchOnWindowFocus: false,
           },
           mutations: {
-            // Retry mutations once on failure
-            retry: 1,
+            // Don't retry mutations by default
+            retry: 0,
           },
         },
       })

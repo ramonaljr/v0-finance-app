@@ -3,44 +3,211 @@
 
 
 :root {
-  /* Legacy theme - Untitled UI-inspired minimal color system */
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.2 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0 0);
-  --primary: oklch(0.5 0.15 280);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.2 0 0);
-  --success: oklch(0.55 0.15 150);
-  --success-foreground: oklch(1 0 0);
-  --destructive: oklch(0.55 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --warning: oklch(0.65 0.15 60);
-  --warning-foreground: oklch(0.2 0 0);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.93 0 0);
-  --ring: oklch(0.5 0.15 280);
-  --chart-1: oklch(0.5 0.15 280);
-  --chart-2: oklch(0.55 0.15 150);
-  --chart-3: oklch(0.6 0.12 200);
-  --chart-4: oklch(0.65 0.15 60);
-  --chart-5: oklch(0.55 0.12 320);
+  /* Light Theme Tokens */
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Surface colors */
+  --surface: 210 40% 98%;
+  --surface-hover: 214 32% 95%;
+  --surface-pressed: 214 32% 91%;
+
+  /* Brand colors */
+  --primary: 258 90% 66%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 259 83% 57%;
+  --primary-pressed: 262 83% 47%;
+
+  --secondary: 142 71% 45%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 214 32% 95%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 100%;
+
+  /* Semantic colors */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --info: 217 91% 60%;
+
+  /* Borders */
+  --border: 214 32% 91%;
+  --border-muted: 214 32% 95%;
+  --border-strong: 215 20% 82%;
+
+  /* Inputs */
+  --input: 210 40% 98%;
+  --input-border: 215 20% 82%;
+  --ring: 258 90% 66%;
+
+  /* Glass-morphism */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(226, 232, 240, 0.5);
+
+  /* Gradients */
+  --gradient-warm-from: 45 93% 58%;
+  --gradient-warm-via: 25 95% 53%;
+  --gradient-warm-to: 0 72% 51%;
+  --gradient-cool-from: 217 91% 60%;
+  --gradient-cool-via: 258 90% 66%;
+  --gradient-cool-to: 330 81% 60%;
+  --gradient-accent-from: 142 76% 36%;
+  --gradient-accent-to: 189 94% 43%;
+
+  /* Chart Colors */
+  --chart-1: 217 91% 60%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 0 91% 59%;
+  --chart-5: 258 90% 66%;
+  --chart-6: 330 81% 60%;
+  --chart-7: 189 94% 43%;
+  --chart-8: 84 81% 44%;
+  --chart-9: 25 95% 53%;
+  --chart-10: 239 84% 67%;
+  --chart-11: 172 66% 50%;
+  --chart-12: 271 91% 65%;
+
+  /* Skeleton */
+  --skeleton-bg: 214 32% 91%;
+  --skeleton-shimmer: 210 40% 98%;
+
+  /* Radius */
   --radius: 0.5rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.2 0 0);
-  --sidebar-primary: oklch(0.5 0.15 280);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.2 0 0);
-  --sidebar-border: oklch(0.93 0 0);
-  --sidebar-ring: oklch(0.5 0.15 280);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Elevation */
+  --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --elevation-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --elevation-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --elevation-4: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Sidebar */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: 258 90% 66%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 214 32% 95%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-ring: 258 90% 66%;
+}
+
+.high-contrast {
+  /* High Contrast Theme Tokens */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+
+  /* Surface colors */
+  --surface: 0 0% 100%;
+  --surface-hover: 0 0% 94%;
+  --surface-pressed: 0 0% 88%;
+
+  /* Brand colors */
+  --primary: 240 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 240 100% 40%;
+  --primary-pressed: 240 100% 30%;
+
+  --secondary: 120 100% 25%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 10%;
+
+  --accent: 30 100% 47%;
+  --accent-foreground: 0 0% 0%;
+
+  /* Semantic colors */
+  --success: 120 100% 25%;
+  --success-foreground: 0 0% 100%;
+  --destructive: 0 100% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --warning: 30 100% 47%;
+  --warning-foreground: 0 0% 0%;
+  --info: 240 100% 50%;
+
+  /* Borders */
+  --border: 0 0% 0%;
+  --border-muted: 0 0% 40%;
+  --border-strong: 0 0% 0%;
+
+  /* Inputs */
+  --input: 0 0% 100%;
+  --input-border: 0 0% 0%;
+  --ring: 30 100% 47%;
+
+  /* Glass-morphism (solid in high-contrast) */
+  --glass-bg: rgb(255, 255, 255);
+  --glass-border: rgb(0, 0, 0);
+
+  /* Gradients */
+  --gradient-warm-from: 39 100% 50%;
+  --gradient-warm-via: 24 100% 50%;
+  --gradient-warm-to: 0 100% 40%;
+  --gradient-cool-from: 240 100% 50%;
+  --gradient-cool-via: 270 100% 40%;
+  --gradient-cool-to: 300 100% 40%;
+  --gradient-accent-from: 120 100% 25%;
+  --gradient-accent-to: 180 100% 40%;
+
+  /* Chart Colors */
+  --chart-1: 240 100% 50%;
+  --chart-2: 120 100% 25%;
+  --chart-3: 30 100% 47%;
+  --chart-4: 0 100% 40%;
+  --chart-5: 280 100% 40%;
+  --chart-6: 300 100% 40%;
+  --chart-7: 180 100% 40%;
+  --chart-8: 90 100% 30%;
+  --chart-9: 24 100% 50%;
+  --chart-10: 240 100% 60%;
+  --chart-11: 160 100% 30%;
+  --chart-12: 280 100% 30%;
+
+  /* Skeleton */
+  --skeleton-bg: 0 0% 88%;
+  --skeleton-shimmer: 0 0% 96%;
+
+  /* Radius (reduced for crispness) */
+  --radius: 0.25rem;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Elevation (borders instead of shadows) */
+  --elevation-1: 0 0 0 2px #000000;
+  --elevation-2: 0 0 0 3px #000000;
+  --elevation-3: 0 0 0 4px #000000;
+  --elevation-4: 0 0 0 5px #000000;
+
+  /* Sidebar */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 0 0% 0%;
+  --sidebar-primary: 240 100% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 96%;
+  --sidebar-accent-foreground: 0 0% 0%;
+  --sidebar-border: 0 0% 0%;
+  --sidebar-ring: 30 100% 47%;
 }
 
 /* Modern Soft Theme - Bright, vibrant, money-app aesthetics */
@@ -513,5 +680,15 @@
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* High Contrast: Remove blur effects */
+  .high-contrast .glass,
+  .high-contrast .glass-strong,
+  .high-contrast .glass-subtle {
+    background: hsl(var(--background));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 2px solid hsl(var(--border));
   }
 }

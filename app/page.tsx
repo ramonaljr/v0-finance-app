@@ -13,7 +13,9 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ThemeToggleButton } from "@/components/theme-toggle-button"
 
-const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
+const NotificationBell = dynamic(() => import("@/components/notification-bell").then(m => ({ default: m.NotificationBell })), { ssr: false })
+const BillReminders = dynamic(() => import("@/components/bill-reminders").then(m => ({ default: m.BillReminders })), { ssr: false })
+import { HomeLoadingSkeleton } from "@/components/loading-states"
 
 interface KPIData {
   income_minor: number
@@ -87,7 +89,15 @@ export default function HomePage() {
           if (accountsResult.status === 'fulfilled') {
             if (accountsResult.value.ok) {
               const accountsJson = await accountsResult.value.json()
-              setAccounts(accountsJson.accounts || [])
+              const userAccounts = accountsJson.accounts || []
+              setAccounts(userAccounts)
+
+              // Check if user needs onboarding
+              const onboardingCompleted = localStorage.getItem('onboarding_completed')
+              if (!onboardingCompleted && userAccounts.length === 0) {
+                router.replace('/onboarding')
+                return
+              }
             } else {
               console.warn('Accounts request failed:', accountsResult.value.status, accountsResult.value.statusText)
             }
@@ -117,14 +127,7 @@ export default function HomePage() {
   }, [router])
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    )
+    return <HomeLoadingSkeleton />
   }
 
   if (!user) {
@@ -159,6 +162,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <ThemeToggleButton />
               <Button
                 size="icon"
@@ -277,13 +281,18 @@ export default function HomePage() {
           </Button>
         </div>
 
+        {/* Bill Reminders */}
+        <div className="px-6 pb-6">
+          <BillReminders />
+        </div>
+
         {/* Quick Actions */}
         <div className="px-6 pb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
             <Button
               className="h-24 flex flex-col gap-2 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
-              onClick={() => router.push('/transaction')}
+              onClick={() => router.push('/transactions')}
             >
               <Plus className="h-6 w-6" />
               <span>Add Transaction</span>
@@ -300,7 +309,6 @@ export default function HomePage() {
       </main>
 
       <BottomNav />
-      <AICoachFAB />
     </div>
   )
 }

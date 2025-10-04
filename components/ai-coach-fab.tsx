@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Send, Sparkles, TrendingUp, PiggyBank, Target, Brain, Lightbulb, DollarSign } from "lucide-react"
@@ -68,15 +68,78 @@ export function AICoachFAB() {
     handleSend()
   }
 
+  // Draggable state
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    // Initialize position to bottom-right
+    if (typeof window !== 'undefined') {
+      setPosition({
+        x: window.innerWidth - 96, // right-6 (24px) + width (64px) + 8px margin
+        y: window.innerHeight - 120 // bottom-24 (96px) + height (64px) - 40px
+      })
+    }
+  }, [])
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    })
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+
+    const newX = e.clientX - dragStart.x
+    const newY = e.clientY - dragStart.y
+
+    // Constrain to viewport
+    const maxX = window.innerWidth - 64
+    const maxY = window.innerHeight - 64
+
+    setPosition({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove)
+        window.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragStart])
+
   return (
     <>
       <Button
+        ref={buttonRef}
         size="icon"
-        className="fixed bottom-24 right-6 z-50 h-16 w-16 rounded-full bg-primary shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-        onClick={() => setIsOpen(true)}
+        style={{
+          position: 'fixed',
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+        className="z-50 h-16 w-16 rounded-full bg-primary shadow-lg hover:shadow-xl transition-shadow duration-300"
+        onClick={() => !isDragging && setIsOpen(true)}
+        onMouseDown={handleMouseDown}
       >
-        <Brain className="h-7 w-7 text-white" />
-        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-[10px] font-bold text-white">
+        <Brain className="h-7 w-7 text-white pointer-events-none" />
+        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-success text-[10px] font-bold text-white pointer-events-none">
           3
         </span>
       </Button>

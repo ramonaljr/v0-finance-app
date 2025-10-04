@@ -2,15 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { DollarSign, FileText, List, PieChart, Settings } from "lucide-react"
+import { Home, List, PieChart, TrendingUp, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/", label: "Home", icon: DollarSign },
-  { href: "/account", label: "Account", icon: FileText },
-  { href: "/transaction", label: "Transaction", icon: List },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/transactions", label: "Transactions", icon: List },
   { href: "/budget", label: "Budget", icon: PieChart },
-  { href: "/setting", label: "Setting", icon: Settings },
+  { href: "/insights", label: "Insights", icon: TrendingUp },
+  { href: "/more", label: "More", icon: MoreHorizontal },
 ]
 
 export function BottomNav() {

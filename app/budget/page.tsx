@@ -24,15 +24,96 @@ import {
   CheckCircle2,
   Clock,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 const AICoachFAB = dynamic(() => import("@/components/ai-coach-fab").then(m => m.AICoachFAB), { ssr: false })
 const BudgetPieChart = dynamic(() => import("@/components/budget-pie-chart").then(m => m.BudgetPieChart), { ssr: false })
 const AIInsightCard = dynamic(() => import("@/components/ai-insight-card").then(m => m.AIInsightCard), { ssr: false })
 import { getCategoryColor } from "@/lib/category-colors"
+import { Loader2 } from "lucide-react"
+
+interface BudgetItem {
+  id: string
+  category_id?: string
+  limit_minor: number
+  spent_minor?: number
+  allocated_minor: number
+  category?: {
+    id: string
+    name: string
+    icon?: string
+    color?: string
+  }
+}
+
+interface Budget {
+  id: string
+  period_year: number
+  period_month: number
+  type: string
+  rollover: boolean
+  items: BudgetItem[]
+}
 
 export default function BudgetPage() {
-  const [currentMonth, setCurrentMonth] = useState("October 2024")
+  const [currentDate, setCurrentDate] = useState(new Date())
   const [tab, setTab] = useState("plan")
+  const [budgets, setBudgets] = useState<Budget[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const currentMonth = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+
+  useEffect(() => {
+    fetchBudgets()
+  }, [currentDate])
+
+  const fetchBudgets = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const year = currentDate.getFullYear()
+      const month = currentDate.getMonth() + 1
+
+      const response = await fetch(`/api/budgets?period_year=${year}&period_month=${month}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch budgets')
+      }
+
+      const data = await response.json()
+      setBudgets(data.budgets || [])
+    } catch (err) {
+      console.error('Error fetching budgets:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load budgets')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const currentBudget = budgets.length > 0 ? budgets[0] : null
+
+  // Calculate budget stats from real data
+  const budgetStats = currentBudget?.items.map(item => {
+    const limit = item.limit_minor / 100
+    const spent = (item.spent_minor || 0) / 100
+    const percentage = limit > 0 ? (spent / limit) * 100 : 0
+    const status = spent > limit ? 'over' : percentage > 85 ? 'warning' : 'good'
+
+    return {
+      id: item.id,
+      category_id: item.category_id,
+      name: item.category?.name || 'Uncategorized',
+      spent,
+      budget: limit,
+      icon: item.category?.icon || '💰',
+      status,
+      ...getCategoryColor(item.category?.name || 'Other')
+    }
+  }) || []
+
+  const totalSpent = budgetStats.reduce((sum, cat) => sum + cat.spent, 0)
+  const totalBudget = budgetStats.reduce((sum, cat) => sum + cat.budget, 0)
+  const percentageUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
 
   const recurringExpenses = [
     {
@@ -115,63 +196,8 @@ export default function BudgetPage() {
     .reduce((sum, exp) => sum + exp.amount, 0)
   const upcomingRecurring = totalRecurring - paidRecurring
 
-  const budgetCategories = [
-    {
-      id: "groceries",
-      name: "Groceries",
-      spent: 487.32,
-      budget: 600,
-      icon: "🛒",
-      status: "good" as const,
-    },
-    {
-      id: "dining",
-      name: "Dining Out",
-      spent: 342.15,
-      budget: 300,
-      icon: "🍽️",
-      status: "over" as const,
-    },
-    {
-      id: "transport",
-      name: "Transportation",
-      spent: 215.8,
-      budget: 250,
-      icon: "🚗",
-      status: "good" as const,
-    },
-    {
-      id: "entertainment",
-      name: "Entertainment",
-      spent: 178.5,
-      budget: 200,
-      icon: "🎬",
-      status: "warning" as const,
-    },
-    {
-      id: "shopping",
-      name: "Shopping",
-      spent: 425.0,
-      budget: 400,
-      icon: "🛍️",
-      status: "over" as const,
-    },
-    {
-      id: "utilities",
-      name: "Utilities",
-      spent: 145.0,
-      budget: 200,
-      icon: "💡",
-      status: "good" as const,
-    },
-  ].map((cat) => ({
-    ...cat,
-    ...getCategoryColor(cat.name),
-  }))
-
-  const totalSpent = budgetCategories.reduce((sum, cat) => sum + cat.spent, 0)
-  const totalBudget = budgetCategories.reduce((sum, cat) => sum + cat.budget, 0)
-  const percentageUsed = (totalSpent / totalBudget) * 100
+  // Use real budget stats or fallback to empty array
+  const budgetCategories = budgetStats.length > 0 ? budgetStats : []
 
   const pieChartData = budgetCategories.map((cat) => ({
     name: cat.name,
@@ -272,13 +298,38 @@ export default function BudgetPage() {
             {/* Budget Categories */}
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gray-900">Categories</h3>
-              {budgetCategories.map((category) => {
+
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                </div>
+              )}
+
+              {error && (
+                <Card className="bg-red-50 border-red-200 p-6">
+                  <p className="text-red-900 font-semibold">Failed to load budget</p>
+                  <p className="text-sm text-red-700">{error}</p>
+                </Card>
+              )}
+
+              {!loading && !error && budgetCategories.length === 0 && (
+                <Card className="bg-white p-8 text-center">
+                  <Target className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-[16px] font-semibold text-gray-900 mb-2">No budget yet</h3>
+                  <Button className="gap-2 mt-4">
+                    <Plus className="h-4 w-4" />
+                    Create Budget
+                  </Button>
+                </Card>
+              )}
+
+              {!loading && !error && budgetCategories.map((category) => {
                 const percentage = (category.spent / category.budget) * 100
                 const isOver = category.spent > category.budget
                 const isWarning = percentage > 85 && !isOver
 
                 return (
-                  <Card key={category.id} className="bg-white p-4 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 rounded-2xl">
+                  <Card key={category.id} className="bg-white p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-2xl">
                     <div className="mb-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${category.bg}`}>
@@ -327,9 +378,9 @@ export default function BudgetPage() {
             <div className="mt-8">
               <h3 className="mb-4 text-sm font-semibold text-gray-900">Spending Trends</h3>
               <div className="grid grid-cols-2 gap-3">
-                <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <Card className="bg-white p-4 shadow-sm rounded-2xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/20">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600">
                       <TrendingDown className="h-5 w-5 text-white" strokeWidth={2.5} />
                     </div>
                     <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">vs Last Month</span>
@@ -338,9 +389,9 @@ export default function BudgetPage() {
                   <p className="text-xs text-gray-600">Saved $142</p>
                 </Card>
 
-                <Card className="bg-white p-4 shadow-md rounded-2xl hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <Card className="bg-white p-4 shadow-sm rounded-2xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/20">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600">
                       <DollarSign className="h-5 w-5 text-white" strokeWidth={2.5} />
                     </div>
                     <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Avg Daily</span>

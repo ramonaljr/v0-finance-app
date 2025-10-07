@@ -28,18 +28,105 @@ import {
   BarChart3,
   DollarSign,
   Receipt,
+  Loader2,
+  AlertCircle,
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 const TransactionSpendingPieChart = dynamic(
   () => import("@/components/transaction-spending-pie-chart").then(m => m.TransactionSpendingPieChart),
   { ssr: false }
 )
 import { TransactionFilters, FilterState } from "@/components/transaction-filters"
 
+interface Transaction {
+  id: string
+  amount_minor: number
+  currency_code: string
+  direction: 'in' | 'out'
+  occurred_at: string
+  payee?: string
+  notes?: string
+  category?: {
+    id: string
+    name: string
+    icon?: string
+    color?: string
+  }
+  account?: {
+    id: string
+    name: string
+    type: string
+  }
+}
+
 export default function TransactionPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [filters, setFilters] = useState<FilterState>({ categoryIds: [], direction: 'all' })
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchTransactions()
+    fetchCategories()
+  }, [filters])
+
+  useEffect(() => {
+    // Listen for transaction added event
+    const handleTransactionAdded = () => {
+      fetchTransactions()
+    }
+    window.addEventListener('transactionAdded', handleTransactionAdded)
+    return () => window.removeEventListener('transactionAdded', handleTransactionAdded)
+  }, [])
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const params = new URLSearchParams()
+      if (filters.direction !== 'all') {
+        params.append('direction', filters.direction)
+      }
+      if (filters.categoryIds.length > 0) {
+        params.append('category_id', filters.categoryIds[0])
+      }
+      if (filters.minAmount) {
+        params.append('min_amount', (filters.minAmount * 100).toString())
+      }
+      if (filters.maxAmount) {
+        params.append('max_amount', (filters.maxAmount * 100).toString())
+      }
+
+      const response = await fetch(`/api/transactions?${params.toString()}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch transactions')
+      }
+
+      const data = await response.json()
+      setTransactions(data.transactions || [])
+    } catch (err) {
+      console.error('Error fetching transactions:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load transactions')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/categories')
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data.categories || [])
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+    }
+  }
 
   const handleExport = async () => {
     try {
@@ -65,7 +152,7 @@ export default function TransactionPage() {
     }
   }
 
-  const transactions = [
+  const mockTransactions = [
     {
       id: 1,
       name: "Whole Foods Market",
@@ -188,27 +275,42 @@ export default function TransactionPage() {
 
   const totalSpending = categoryStats.reduce((sum, cat) => sum + cat.amount, 0)
 
-  const filteredTransactions = transactions.filter((t) => {
-    // Search query
-    if (searchQuery && !t.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
-
-    // Direction filter
-    if (filters.direction !== 'all') {
-      const isExpense = t.amount < 0
-      if (filters.direction === 'out' && !isExpense) return false
-      if (filters.direction === 'in' && isExpense) return false
+  // Calculate stats from real transactions
+  const transactionStats = transactions.reduce((acc, t) => {
+    const amount = t.amount_minor / 100
+    if (t.direction === 'out') {
+      acc.totalExpenses += amount
+      acc.expenseCount++
+    } else {
+      acc.totalIncome += amount
+      acc.incomeCount++
     }
+    return acc
+  }, { totalExpenses: 0, totalIncome: 0, expenseCount: 0, incomeCount: 0 })
 
-    // Category filter
-    if (filters.categoryIds.length > 0 && !filters.categoryIds.includes(t.category)) return false
-
-    // Amount filter
-    const absAmount = Math.abs(t.amount)
-    if (filters.minAmount && absAmount < filters.minAmount) return false
-    if (filters.maxAmount && absAmount > filters.maxAmount) return false
-
+  // Client-side search filtering
+  const displayTransactions = transactions.filter((t) => {
+    if (searchQuery && t.payee && !t.payee.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false
+    }
+    if (searchQuery && t.notes && !t.notes.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false
+    }
     return true
   })
+
+  // Map API transactions to UI format
+  const getCategoryIcon = (name?: string) => {
+    if (!name) return DollarSign
+    const lower = name.toLowerCase()
+    if (lower.includes('groc')) return ShoppingBag
+    if (lower.includes('food') || lower.includes('dining') || lower.includes('restaurant')) return Coffee
+    if (lower.includes('transport') || lower.includes('gas') || lower.includes('car')) return Car
+    if (lower.includes('home') || lower.includes('rent') || lower.includes('utilit')) return Home
+    if (lower.includes('health') || lower.includes('fitness')) return Heart
+    if (lower.includes('income') || lower.includes('salary')) return Briefcase
+    return DollarSign
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-20">
@@ -228,31 +330,31 @@ export default function TransactionPage() {
 
           {/* Summary Cards */}
           <div className="mb-6 grid grid-cols-3 gap-3">
-            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/20 border-2 border-white">
+            <Card className="bg-white p-5 rounded-2xl shadow-sm transition-all duration-200">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 border-2 border-white">
                 <Receipt className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
               <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</p>
-              <p className="text-xl font-bold text-gray-900">142</p>
+              <p className="text-xl font-bold text-gray-900">{loading ? '...' : transactions.length}</p>
               <p className="text-xs font-medium text-gray-600">transactions</p>
             </Card>
 
-            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/20 border-2 border-white">
+            <Card className="bg-white p-5 rounded-2xl shadow-sm transition-all duration-200">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 border-2 border-white">
                 <ArrowDownRight className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
               <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Expenses</p>
-              <p className="text-xl font-bold text-gray-900">$1,724</p>
-              <p className="text-xs font-semibold text-red-600">+12% vs last</p>
+              <p className="text-xl font-bold text-gray-900">{loading ? '...' : `$${transactionStats.totalExpenses.toFixed(0)}`}</p>
+              <p className="text-xs font-medium text-gray-600">{transactionStats.expenseCount} transactions</p>
             </Card>
 
-            <Card className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg shadow-green-500/20 border-2 border-white">
+            <Card className="bg-white p-5 rounded-2xl shadow-sm transition-all duration-200">
+              <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 border-2 border-white">
                 <ArrowUpRight className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
               <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Income</p>
-              <p className="text-xl font-bold text-gray-900">$5,200</p>
-              <p className="text-xs font-medium text-gray-600">Same as last</p>
+              <p className="text-xl font-bold text-gray-900">{loading ? '...' : `$${transactionStats.totalIncome.toFixed(0)}`}</p>
+              <p className="text-xs font-medium text-gray-600">{transactionStats.incomeCount} transactions</p>
             </Card>
           </div>
 
@@ -268,11 +370,11 @@ export default function TransactionPage() {
               />
             </div>
             <TransactionFilters
-              categories={categoryStats.map(c => ({
-                id: c.name,
+              categories={categories.map(c => ({
+                id: c.id,
                 name: c.name,
-                icon: undefined,
-                color: c.chartColor
+                icon: c.icon,
+                color: c.color
               }))}
               onApplyFilters={setFilters}
               activeFilters={filters}
@@ -309,43 +411,72 @@ export default function TransactionPage() {
               <FinancialCalendar />
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-gray-900">Dec 14, Mon</h3>
-                <p className="text-sm font-bold text-red-600">OUT $60.75</p>
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
               </div>
-              {filteredTransactions.slice(0, 4).map((transaction) => {
-                const Icon = transaction.icon
-                const isIncome = transaction.amount > 0
+            )}
 
-                return (
-                  <Card key={transaction.id} className="bg-white p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${transaction.bgGradient} shadow-lg ${transaction.glowColor} border-2 border-white`}
-                      >
-                        <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-bold text-gray-900">{transaction.name}</p>
-                        <p className="text-xs font-semibold text-gray-600">{transaction.category}</p>
-                        <p className="text-xs font-medium text-gray-600">{transaction.date}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-right">
-                          <p
-                            className={`text-xl font-bold ${isIncome ? "text-green-600" : "text-gray-900"}`}
-                          >
-                            {isIncome ? "+" : ""}${Math.abs(transaction.amount).toFixed(2)}
-                          </p>
+            {error && (
+              <Card className="bg-red-50 border-red-200 p-6">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <div>
+                    <p className="font-semibold text-red-900">Failed to load transactions</p>
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {!loading && !error && displayTransactions.length === 0 && (
+              <Card className="bg-white p-8 text-center">
+                <Receipt className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-[16px] text-gray-700">No transactions yet</p>
+              </Card>
+            )}
+
+            {!loading && !error && displayTransactions.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-gray-900">Recent Transactions</h3>
+                  <p className="text-sm font-medium text-gray-600">{displayTransactions.length} total</p>
+                </div>
+                {displayTransactions.slice(0, 20).map((transaction) => {
+                  const Icon = getCategoryIcon(transaction.category?.name)
+                  const isIncome = transaction.direction === 'in'
+                  const amount = transaction.amount_minor / 100
+                  const date = new Date(transaction.occurred_at)
+
+                  return (
+                    <Card key={transaction.id} className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${isIncome ? 'bg-emerald-600' : 'bg-red-600'} border-2 border-white`}
+                        >
+                          <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
                         </div>
-                        <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-bold text-gray-900">{transaction.payee || 'Transaction'}</p>
+                          <p className="text-xs font-semibold text-gray-600">{transaction.category?.name || 'Uncategorized'}</p>
+                          <p className="text-xs font-medium text-gray-600">{date.toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            <p
+                              className={`text-xl font-bold ${isIncome ? "text-green-600" : "text-gray-900"}`}
+                            >
+                              {isIncome ? "+" : "-"}${Math.abs(amount).toFixed(2)}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-600" strokeWidth={2.5} />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                )
-              })}
-            </div>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="stats" className="space-y-6">

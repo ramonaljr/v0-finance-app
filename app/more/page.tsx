@@ -16,7 +16,9 @@ import {
   Shield,
   Download,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Landmark,
+  Home
 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -75,6 +77,22 @@ export default function MorePage() {
       color: "from-pink-500 to-rose-500"
     },
     {
+      id: "loans",
+      title: "Loans",
+      description: "Track personal, auto & student loans",
+      icon: Landmark,
+      href: "/loans",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      id: "mortgages",
+      title: "Mortgages",
+      description: "Monitor home equity & payments",
+      icon: Home,
+      href: "/mortgages",
+      color: "from-emerald-500 to-teal-500"
+    },
+    {
       id: "notifications",
       title: "Notifications",
       description: "Alerts & reminders",
@@ -126,18 +144,22 @@ export default function MorePage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <Card className="p-3 rounded-xl">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Accounts</p>
+          <div className="grid grid-cols-4 gap-2">
+            <Card className="p-4 rounded-xl">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Accounts</p>
               <p className="text-2xl font-bold text-gray-900">2</p>
             </Card>
-            <Card className="p-3 rounded-xl">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Cards</p>
+            <Card className="p-4 rounded-xl">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Cards</p>
               <p className="text-2xl font-bold text-gray-900">2</p>
             </Card>
-            <Card className="p-3 rounded-xl">
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Subscriptions</p>
-              <p className="text-2xl font-bold text-gray-900">5</p>
+            <Card className="p-4 rounded-xl">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Loans</p>
+              <p className="text-2xl font-bold text-gray-900">4</p>
+            </Card>
+            <Card className="p-4 rounded-xl">
+              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Homes</p>
+              <p className="text-2xl font-bold text-gray-900">2</p>
             </Card>
           </div>
         </div>
@@ -152,11 +174,11 @@ export default function MorePage() {
             return (
               <Card
                 key={item.id}
-                className="bg-white p-4 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                 onClick={() => router.push(item.href)}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.color} shadow-lg shadow-${item.color}/20 border-2 border-white`}>
+                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.color} border-2 border-white`}>
                     <Icon className="h-7 w-7 text-white" strokeWidth={2.5} />
                   </div>
 

@@ -29,19 +29,19 @@ export function BottomNav() {
               href={item.href}
               prefetch
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-colors hit-target",
+                "flex flex-col items-center justify-center gap-1 px-3 py-2 text-xs transition-colors min-h-[48px] min-w-[48px]",
                 "modern-soft:transition-smooth modern-soft:rounded-sm modern-soft:btn-press",
-                isActive 
-                  ? "text-primary modern-soft:text-primary modern-soft:bg-primary-soft" 
+                isActive
+                  ? "text-primary modern-soft:text-primary modern-soft:bg-primary-soft"
                   : "text-muted-foreground hover:text-foreground modern-soft:hover:bg-surface-alt",
               )}
             >
               <Icon className={cn(
-                "h-5 w-5 modern-soft:h-7 modern-soft:w-7",
+                "h-6 w-6 modern-soft:h-6 modern-soft:w-6",
                 isActive ? "modern-soft:stroke-2" : "modern-soft:stroke-[1.5]"
               )} strokeWidth={isActive ? 2.5 : 2} />
               <span className={cn(
-                "font-medium modern-soft:text-[10px] modern-soft:leading-tight",
+                "font-medium text-[11px] modern-soft:text-[11px] modern-soft:leading-tight",
                 isActive ? "modern-soft:font-semibold" : "modern-soft:font-medium"
               )}>{item.label}</span>
             </Link>

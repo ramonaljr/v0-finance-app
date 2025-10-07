@@ -111,8 +111,38 @@ export function AddTransactionDialog() {
     setIsProcessing(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log("[v0] Transaction saved:", { merchant, amount, category, date, notes })
+      // Parse amount
+      const parsedAmount = parseFloat(amount)
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        alert('Please enter a valid amount')
+        setIsProcessing(false)
+        return
+      }
+
+      // Build transaction payload
+      const transaction = {
+        amount_minor: Math.round(parsedAmount * 100),
+        currency_code: 'USD',
+        direction: 'out' as const, // Default to expense; could add toggle
+        occurred_at: new Date(date).toISOString(),
+        payee: merchant,
+        notes: notes || undefined,
+      }
+
+      // POST to API
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactions: [transaction] })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save transaction')
+      }
+
+      const result = await response.json()
+      console.log('Transaction saved:', result)
 
       // Reset form and close dialog
       setMerchant("")
@@ -122,8 +152,12 @@ export function AddTransactionDialog() {
       setNotes("")
       setExtractedData(null)
       setOpen(false)
+
+      // Trigger page refresh by dispatching custom event
+      window.dispatchEvent(new Event('transactionAdded'))
     } catch (error) {
-      console.error("[v0] Save transaction error:", error)
+      console.error('Save transaction error:', error)
+      alert(error instanceof Error ? error.message : 'Failed to save transaction')
     } finally {
       setIsProcessing(false)
     }

@@ -148,8 +148,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50/30 pb-20">
       <main className="mx-auto max-w-lg">
         {/* Enhanced Header */}
-        <div className="border-b bg-white px-6 pb-6 pt-8 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
+        <div className="border-b bg-white px-6 pb-8 pt-8 shadow-sm">
+          <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-lg shadow-primary/10 ring-2 ring-offset-2 ring-primary/10">
                 <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-lg">
@@ -157,17 +157,17 @@ export default function HomePage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Welcome back</p>
-                <h1 className="text-xl font-bold text-gray-900">{userEmail.split('@')[0]}</h1>
+                <p className="text-[12px] font-medium text-gray-700 uppercase tracking-wide">Welcome back</p>
+                <h2 className="text-[20px] font-bold text-gray-900">{userEmail.split('@')[0]}</h2>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <NotificationBell />
               <ThemeToggleButton />
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-10 w-10 hover:bg-gray-100 hover-scale-sm rounded-xl transition-all"
+                className="h-12 w-12 hover:bg-gray-100 rounded-xl transition-all"
                 onClick={() => router.push('/auth/login')}
               >
                 <Eye className="h-5 w-5" />
@@ -176,24 +176,24 @@ export default function HomePage() {
           </div>
 
           {/* Enhanced Balance Card */}
-          <div className="rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/30 p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover-scale-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 pulse-glow" />
-              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Balance</p>
+          <div className="rounded-2xl border border-gray-200/50 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/30 p-6 shadow-md transition-all duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+              <p className="text-[12px] font-semibold text-gray-700 uppercase tracking-wider">Total Balance</p>
             </div>
-            <p className="mb-4 text-4xl lg:text-5xl font-bold tracking-tight text-gradient-primary tabular-nums">
+            <p className="mb-6 text-[28px] lg:text-[28px] font-bold tracking-tight text-gradient-primary tabular-nums">
               ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-8">
               <div className="flex items-center gap-2.5">
-                <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-sm shadow-emerald-500/50" />
-                <span className="text-sm font-medium text-gray-700">
+                <div className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                <span className="text-[16px] font-medium text-gray-700">
                   Income: <span className="font-bold text-emerald-600">${income.toFixed(2)}</span>
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
-                <div className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-sm shadow-red-500/50" />
-                <span className="text-sm font-medium text-gray-700">
+                <div className="h-2.5 w-2.5 rounded-full bg-red-600" />
+                <span className="text-[16px] font-medium text-gray-700">
                   Expenses: <span className="font-bold text-red-600">${expenses.toFixed(2)}</span>
                 </span>
               </div>
@@ -201,108 +201,49 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* This Month Summary */}
-        <div className="px-6 py-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">This Month</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <Card className="p-4 text-center hover:shadow-lg transition-all">
-              <p className="text-2xl font-bold text-emerald-600">${income.toFixed(0)}</p>
-              <p className="text-xs text-gray-600 mt-1">Income</p>
-            </Card>
-            <Card className="p-4 text-center hover:shadow-lg transition-all">
-              <p className="text-2xl font-bold text-red-600">${expenses.toFixed(0)}</p>
-              <p className="text-xs text-gray-600 mt-1">Expenses</p>
-            </Card>
-            <Card className="p-4 text-center hover:shadow-lg transition-all">
-              <p className={`text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        {/* Quick Stats - Condensed */}
+        <div className="px-6 py-8">
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="text-center">
+              <p className="text-[12px] text-gray-700 mb-1">Income</p>
+              <p className="text-[20px] font-bold text-emerald-600">${income.toFixed(0)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[12px] text-gray-700 mb-1">Expenses</p>
+              <p className="text-[20px] font-bold text-red-600">${expenses.toFixed(0)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[12px] text-gray-700 mb-1">Net</p>
+              <p className={`text-[20px] font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 ${net.toFixed(0)}
               </p>
-              <p className="text-xs text-gray-600 mt-1">Net</p>
-            </Card>
-          </div>
-        </div>
-
-        {/* Accounts */}
-        <div className="px-6 pb-6">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Accounts</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1.5 text-indigo-600 hover:bg-indigo-50 font-semibold rounded-xl px-3"
-              onClick={() => router.push('/account')}
-            >
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
-              Add
-            </Button>
-          </div>
-
-          {accounts.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-600 mb-4">No accounts yet</p>
-              <Button onClick={() => router.push('/account')}>Add Your First Account</Button>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {accounts.map((account) => (
-                <Card key={account.id} className="p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white rounded-2xl shadow-md">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 shadow-lg
-                        ${account.type === 'checking' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 border-indigo-200 shadow-indigo-500/20' : ''}
-                        ${account.type === 'savings' ? 'bg-gradient-to-br from-emerald-400 to-green-600 border-emerald-200 shadow-emerald-500/20' : ''}
-                        ${account.type === 'credit' ? 'bg-gradient-to-br from-red-400 to-red-600 border-red-200 shadow-red-500/20' : ''}
-                        ${account.type === 'investment' ? 'bg-gradient-to-br from-amber-400 to-orange-600 border-amber-200 shadow-amber-500/20' : ''}
-                        ${account.type === 'cash' ? 'bg-gradient-to-br from-gray-500 to-gray-700 border-gray-200 shadow-gray-500/20' : ''}
-                      `}>
-                        <span className="text-sm font-bold text-white">{account.name.substring(0, 2).toUpperCase()}</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">{account.name}</p>
-                        <p className="text-xs text-gray-500 font-medium capitalize">{account.type}</p>
-                      </div>
-                    </div>
-                    <p className={`text-lg font-bold tabular-nums ${account.balance_minor >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-                      ${(account.balance_minor / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </Card>
-              ))}
             </div>
-          )}
+          </div>
 
-          <Button
-            variant="outline"
-            className="mt-5 w-full bg-white border-2 hover:bg-gray-50 h-12 rounded-xl font-semibold hover-scale-sm transition-all"
-            onClick={() => router.push('/account')}
-          >
-            Manage Accounts
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Bill Reminders */}
-        <div className="px-6 pb-6">
-          <BillReminders />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="px-6 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3">
+          {/* Quick Actions - Prominent */}
+          <div className="space-y-3">
             <Button
-              className="h-24 flex flex-col gap-2 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              className="w-full h-14 justify-start gap-4 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md"
               onClick={() => router.push('/transactions')}
             >
-              <Plus className="h-6 w-6" />
-              <span>Add Transaction</span>
+              <Plus className="h-5 w-5" />
+              <span className="text-[16px] font-semibold">Add Transaction</span>
             </Button>
             <Button
-              className="h-24 flex flex-col gap-2 bg-gradient-to-br from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+              variant="outline"
+              className="w-full h-14 justify-start gap-4 border-2 hover:bg-gray-50"
               onClick={() => router.push('/budget')}
             >
-              <Target className="h-6 w-6" />
-              <span>View Budget</span>
+              <Target className="h-5 w-5 text-indigo-600" />
+              <span className="text-[16px] font-semibold text-gray-900">View Budget</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-14 justify-start gap-4 border-2 hover:bg-gray-50"
+              onClick={() => router.push('/account')}
+            >
+              <TrendingUp className="h-5 w-5 text-indigo-600" />
+              <span className="text-[16px] font-semibold text-gray-900">Manage Accounts</span>
             </Button>
           </div>
         </div>

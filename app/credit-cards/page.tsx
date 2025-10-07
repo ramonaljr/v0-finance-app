@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,7 +15,8 @@ import {
   TrendingUp,
   Plus,
   ChevronRight,
-  Info
+  Info,
+  Lock
 } from "lucide-react"
 
 interface CreditCardData {
@@ -32,6 +34,32 @@ interface CreditCardData {
 }
 
 export default function CreditCardsPage() {
+  const router = useRouter()
+  const featureEnabled = process.env.NEXT_PUBLIC_FEATURE_CREDIT_CARDS === 'true'
+
+  useEffect(() => {
+    if (!featureEnabled) {
+      router.push('/more')
+    }
+  }, [featureEnabled, router])
+
+  if (!featureEnabled) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <Card className="max-w-md p-8 text-center">
+          <Lock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Feature Not Available</h2>
+          <p className="text-gray-600 mb-4">
+            Credit card tracking is currently disabled. Contact your administrator to enable this feature.
+          </p>
+          <Button onClick={() => router.push('/more')}>
+            Go Back
+          </Button>
+        </Card>
+      </div>
+    )
+  }
+
   const [cards] = useState<CreditCardData[]>([
     {
       id: "1",

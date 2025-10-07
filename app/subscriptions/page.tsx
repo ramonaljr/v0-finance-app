@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { BottomNav } from "@/components/bottom-nav"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,8 @@ import {
   Dumbbell,
   Cloud,
   Zap,
-  Gamepad2
+  Gamepad2,
+  Lock
 } from "lucide-react"
 
 interface Subscription {
@@ -41,6 +43,32 @@ interface Subscription {
 }
 
 export default function SubscriptionsPage() {
+  const router = useRouter()
+  const featureEnabled = process.env.NEXT_PUBLIC_FEATURE_SUBSCRIPTIONS === 'true'
+
+  useEffect(() => {
+    if (!featureEnabled) {
+      router.push('/more')
+    }
+  }, [featureEnabled, router])
+
+  if (!featureEnabled) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <Card className="max-w-md p-8 text-center">
+          <Lock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Feature Not Available</h2>
+          <p className="text-gray-600 mb-4">
+            Subscriptions tracking is currently disabled. Contact your administrator to enable this feature.
+          </p>
+          <Button onClick={() => router.push('/more')}>
+            Go Back
+          </Button>
+        </Card>
+      </div>
+    )
+  }
+
   const [subscriptions] = useState<Subscription[]>([
     {
       id: "1",

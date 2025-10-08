@@ -54,13 +54,14 @@ export default function HomePage() {
 
         const currentUser = session?.user
 
-        if (!currentUser) {
-          router.replace('/auth/login')
-          return
-        }
+        // Temporarily disabled authentication
+        // if (!currentUser) {
+        //   router.replace('/auth/login')
+        //   return
+        // }
 
         if (!isMounted) return
-        setUser(currentUser)
+        setUser(currentUser || { email: 'demo@user.com' })
 
         const currentDate = new Date()
         const year = currentDate.getFullYear()
